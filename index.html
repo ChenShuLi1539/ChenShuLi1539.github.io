@@ -1502,8 +1502,6 @@ var MIN_DECK_SIZE = 8;
 
 function initDeckBuilder() {
   var grid = document.getElementById("deck-card-grid");
-  var cntEl = document.getElementById("deck-count");
-  var btn = document.getElementById("btn-start-game");
 
   var selectedNames = new Set();
   try {
@@ -1515,20 +1513,25 @@ function initDeckBuilder() {
   } catch(e) {}
 
   function updateUI() {
-    cntEl.textContent = selectedNames.size;
-    btn.disabled = selectedNames.size < MIN_DECK_SIZE;
-    var children = grid.children;
-    for (var i = 0; i < children.length; i++) {
-      var item = children[i];
-      var name = item.dataset.cardName;
-      if (selectedNames.has(name)) item.classList.add("selected");
-      else item.classList.remove("selected");
-      var cb = item.querySelector(".deck-card-checkbox");
-      if (cb) cb.checked = selectedNames.has(name);
-    }
+    var b = document.getElementById("btn-start-game");
+    var c = document.getElementById("deck-count");
+    if (b) b.disabled = selectedNames.size < MIN_DECK_SIZE;
+    if (c) c.textContent = selectedNames.size;
+    try {
+      var children = grid.children;
+      for (var i = 0; i < children.length; i++) {
+        var item = children[i];
+        var name = item.dataset.cardName;
+        if (!name) continue;
+        if (selectedNames.has(name)) item.classList.add("selected");
+        else item.classList.remove("selected");
+        var cb = item.querySelector(".deck-card-checkbox");
+        if (cb) cb.checked = selectedNames.has(name);
+      }
+    } catch(e) {}
   }
 
-  btn.addEventListener("click", function() {
+  document.getElementById("btn-start-game").addEventListener("click", function() {
     if (selectedNames.size < MIN_DECK_SIZE) {
       toast("请至少选择8张卡牌");
       return;
@@ -1600,6 +1603,7 @@ function initDeckBuilder() {
 
     (function(defName) {
       div.addEventListener("click", function(e) {
+        e.stopPropagation();
         if (e.target.tagName === "INPUT") return;
         if (selectedNames.has(defName)) selectedNames.delete(defName);
         else selectedNames.add(defName);
@@ -1608,7 +1612,8 @@ function initDeckBuilder() {
         updateUI();
       });
 
-      cb.addEventListener("change", function() {
+      cb.addEventListener("change", function(e) {
+        e.stopPropagation();
         if (cb.checked) selectedNames.add(defName);
         else selectedNames.delete(defName);
         var names = []; selectedNames.forEach(function(v) { names.push(v); });
@@ -1641,20 +1646,19 @@ function initDeckBuilder() {
     presetContainer.appendChild(btn);
   }
 
-  var presetBtns = document.querySelectorAll(".preset-btn");
-  for (var pb = 0; pb < presetBtns.length; pb++) {
-    presetBtns[pb].addEventListener("click", function(e) {
-      e.stopPropagation();
-      var key = this.dataset.preset;
-      var p = PRESETS[key];
-      if (!p) return;
-      selectedNames.clear();
-      for (var pn = 0; pn < p.cards.length; pn++) selectedNames.add(p.cards[pn]);
-      var pnames = []; selectedNames.forEach(function(v) { pnames.push(v); });
-      localStorage.setItem("h5game_deck", JSON.stringify(pnames));
-      updateUI();
-    });
-  }
+  presetContainer.addEventListener("click", function(e) {
+    var target = e.target.closest(".preset-btn");
+    if (!target) return;
+    e.stopPropagation();
+    var key = target.dataset.preset;
+    var p = PRESETS[key];
+    if (!p) return;
+    selectedNames.clear();
+    for (var pn = 0; pn < p.cards.length; pn++) selectedNames.add(p.cards[pn]);
+    var pnames = []; selectedNames.forEach(function(v) { pnames.push(v); });
+    localStorage.setItem("h5game_deck", JSON.stringify(pnames));
+    updateUI();
+  });
 
   }
 
@@ -2038,7 +2042,7 @@ function switchPanel(name) {
   if (navItem) navItem.classList.add("active");
 
   closeSidebar();
-  renderAll();
+  try { renderAll(); } catch(e) {}
 }
 
 function closeSidebar() {
