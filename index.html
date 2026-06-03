@@ -1,253 +1,2167 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  
-  
-  <title>Page of ChenShuLi</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Page of ChenShuLi">
-<meta property="og:url" content="http://example.com/index.html">
-<meta property="og:site_name" content="Page of ChenShuLi">
-<meta property="og:locale" content="en_US">
-<meta property="article:author" content="ShuLi Chen">
-<meta name="twitter:card" content="summary">
-  
-    <link rel="alternate" href="/atom.xml" title="Page of ChenShuLi" type="application/atom+xml">
-  
-  
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
-    
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>万类霜天竞自由</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --sidebar-bg: #16162a;
+  --panel-bg: #1e1e32;
+  --card-bg: #25253d;
+  --card-border: #3a3a5a;
+  --text: #e0d7c6;
+  --text-muted: #a09888;
+  --accent: #6c63ff;
+  --accent-gold: #e8b86d;
+  --hp-bar: #c44b4b;
+  --hp-bar-bg: #3a2020;
+  --skill-pill-bg: #2a2a3e;
+  --border-color: #3a3a5a;
+  --land-color: #8b9a4b;
+  --sky-color: #6ba3c7;
+  --sea-color: #5b8cb8;
+  --success: #4caf50;
+  --danger: #e74c3c;
+  --warning: #e8b86d;
+}
 
-  
-  
-<link rel="stylesheet" href="/css/style.css">
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; background:var(--bg); color:var(--text); font-size:20px; }
 
-  
-    
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+.app-container { display:flex; width:100%; height:100vh; overflow:hidden; }
 
-  
-<meta name="generator" content="Hexo 5.4.0"></head>
+.sidebar { width:70px; min-width:70px; height:100%; background:var(--sidebar-bg); display:flex; flex-direction:column; align-items:center; padding-top:16px; transition:width 0.3s; overflow:hidden; z-index:100; position:relative; }
+.sidebar.open { width:200px; }
+.nav-header { font-size:14px; color:var(--text-muted); text-align:center; padding:8px 0; white-space:nowrap; overflow:hidden; width:100%; }
+.nav-items { display:flex; flex-direction:column;align-items:center; width:100%; gap:6px; margin-top:8px; }
+.nav-item { display:flex; align-items:center; gap:10px; width:100%; padding:14px 0; justify-content:center; cursor:pointer; color:var(--text-muted); font-size:16px; text-decoration:none; transition:0.2s; white-space:nowrap; }
+.nav-item:hover { color:var(--accent-gold); background:rgba(255,255,255,0.03); }
+.nav-item.active { color:var(--accent-gold); background:rgba(232,184,109,0.08); border-left:3px solid var(--accent-gold); padding-left:5px; }
+.nav-item .nav-icon { font-size:24px; flex-shrink:0; }
 
+.main-content { flex:1; height:100%; overflow:hidden; position:relative; display:flex; flex-direction:column; }
+
+.hamburger { display:none; position:absolute; top:12px; left:12px; z-index:200; cursor:pointer; width:36px; height:28px; flex-direction:column; justify-content:space-between; }
+.hamburger span { display:block; height:4px; background:var(--text); border-radius:2px; transition:0.3s; }
+.hamburger.active span:nth-child(1) { transform:rotate(45deg) translate(6px,6px); }
+.hamburger.active span:nth-child(2) { opacity:0; }
+.hamburger.active span:nth-child(3) { transform:rotate(-45deg) translate(6px,-6px); }
+
+.panel { display:none; width:100%; height:100%; overflow-y:auto; padding:16px; }
+.panel.active { display:flex; flex-direction:column; }
+
+/* Battle Panel */
+#panel-battle { padding:0; }
+.top-bar { display:flex; gap:8px; padding:6px 8px; min-height:0; flex-shrink:0; }
+.battle-log { flex:1; background:var(--card-bg); border-radius:8px; padding:8px; max-height:80px; overflow-y:auto; font-size:14px; line-height:1.6; border:1px solid var(--card-border); }
+.log-entry { padding:1px 0; }
+.log-entry.system { color:var(--text-muted); }
+.log-entry.player { color:#e8c46d; }
+.log-entry.boss { color:#7eb8da; }
+.queue-label { font-size:14px; color:var(--text-muted); margin-bottom:4px; font-weight:600; }
+.queue-row { display:flex; flex-wrap:wrap; gap:5px; }
+.skill-pill { font-size:13px; padding:5px 12px; border-radius:14px; color:#fff; white-space:normal; font-weight:600; display:inline-flex; flex-direction:column; gap:1px; align-items:flex-start; max-width:180px; }
+.skill-pill b { font-size:14px; }
+.skill-pill .pill-cost { font-size:12px; opacity:0.85; }
+.skill-pill .pill-desc { font-size:12px; opacity:0.7; white-space:normal; word-break:break-all; }
+.skill-pill.player { background:var(--accent); color:#fff; }
+.skill-pill.boss { background:#c0392b; color:#fff; font-weight:600; }
+.skill-pill.boss .pill-desc { opacity:0.9; color:#ffe0e0; }
+.skill-pill.boss .pill-cost { opacity:0.9; color:#ffd0d0; }
+
+.middle-area { display:flex; flex:1; min-height:0; padding:4px 8px; gap:8px; align-items:stretch; }
+.status-panel { flex:1; background:var(--card-bg); border-radius:8px; padding:10px; overflow:visible; border:1px solid var(--card-border); min-width:0; }
+.player-panel { border-left:3px solid var(--accent); }
+.boss-panel { border-right:3px solid var(--danger); }
+
+.entity-header { display:flex; align-items:center; gap:6px; margin-bottom:4px; flex-wrap:wrap; }
+.entity-name { font-size:20px; font-weight:700; }
+.entity-name.player-name { color:var(--accent); }
+.entity-name.boss-name { color:#e74c3c; }
+.entity-buffs { display:flex; gap:3px; flex-wrap:wrap; }
+
+.hp-container { margin:2px 0 8px; }
+.hp-label { font-size:14px; color:var(--text-muted); display:block; margin-bottom:2px; }
+.hp-bar-outer { height:14px; background:var(--hp-bar-bg); border-radius:7px; overflow:hidden; margin:2px 0; }
+.hp-bar-inner { height:100%; background:var(--hp-bar); transition:width 0.4s; }
+.hp-text { font-size:14px; color:var(--text); }
+
+.buff-section { margin:4px 0; }
+.buff-label { font-size:14px; color:var(--text-muted); display:block; margin-bottom:3px; }
+.buff-icons, .debuff-icons { display:flex; flex-wrap:wrap; gap:4px; }
+.buff-icon, .debuff-icon { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; position:relative; background:rgba(108,99,255,0.15); border:1px solid rgba(108,99,255,0.3); }
+.debuff-icon { background:rgba(231,76,60,0.15); border-color:rgba(231,76,60,0.3); }
+.buff-icon:hover .tooltip, .debuff-icon:hover .tooltip { opacity:1; visibility:visible; }
+.tooltip { position:absolute; bottom:120%; left:50%; transform:translateX(-50%); background:#000; color:#fff; font-size:13px; padding:4px 8px; border-radius:4px; white-space:nowrap; opacity:0; visibility:hidden; transition:0.2s; pointer-events:none; z-index:999; }
+
+.resource-stats { margin-top:8px; display:flex; flex-direction:column; gap:2px; }
+.resource-row { display:flex; justify-content:space-between; align-items:center; font-size:15px; }
+.resource-row .label { color:var(--text-muted); }
+.resource-row .value { color:var(--text); }
+.resource-row .value.crit { color:#f0a060; }
+.resource-row .value.defend { color:#6bbf6b; }
+.resource-row .value-amount { color:var(--text); font-weight:700; font-size:16px; }
+.mini-bar { position:relative; height:10px; background:rgba(255,255,255,0.08); border-radius:5px; margin:2px 0 2px 0; overflow:hidden; }
+.mini-bar-fill { height:100%; border-radius:5px; transition:width 0.4s; }
+.mini-bar.exp-bar .mini-bar-fill { background: linear-gradient(90deg, #5b8cb8, #7eb8da); }
+.mini-bar.crit-bar .mini-bar-fill { background: linear-gradient(90deg, #e8b86d, #f0d090); }
+.mini-bar.critdmg-bar .mini-bar-fill { background: linear-gradient(90deg, #e8b86d, #f0d090); }
+.mini-bar.defend-bar .mini-bar-fill { background: linear-gradient(90deg, #5cb85c, #6bbf6b); }
+.mini-bar-text { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:9px; color:rgba(255,255,255,0.7); white-space:nowrap; }
+
+.queue-in-panel { margin-top:8px; border-top:1px solid var(--card-border); padding-top:6px; }
+.queue-in-panel .queue-label { font-size:13px; margin-bottom:4px; }
+.queue-in-panel .queue-row { gap:4px; }
+.queue-in-panel .skill-pill { font-size:12px; padding:4px 10px; }
+
+.battlefield { width:120px; min-width:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
+.battlefield-avatar { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.avatar-circle { width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; }
+.player-avatar { background:rgba(108,99,255,0.2); border:2px solid var(--accent); }
+.boss-avatar { background:rgba(231,76,60,0.2); border:2px solid var(--danger); }
+.avatar-label { font-size:13px; color:var(--text-muted); }
+.vs-indicator { font-size:22px; font-weight:700; color:var(--accent-gold); }
+.floating-number { position:absolute; font-size:22px; font-weight:700; animation:floatUp 1s forwards; pointer-events:none; z-index:20; }
+@keyframes floatUp { 0%{opacity:1;transform:translateY(0);} 100%{opacity:0;transform:translateY(-40px);} }
+
+.bottom-bar { display:flex; gap:8px; padding:8px; align-items:center; border-top:1px solid var(--card-border); }
+.hand-cards { flex:1; display:flex; gap:8px; overflow-x:auto; padding:6px; }
+.card { min-width:120px; width:120px; min-height:150px; padding:12px 8px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px; transition:0.2s; user-select:none; position:relative; }
+.card:hover { border-color:var(--accent-gold); transform:translateY(-4px); }
+.card.dragging { opacity:0.5; }
+.card-name { font-size:16px; font-weight:700; color:var(--text); }
+.card-type-badge { position:absolute; top:3px; right:3px; width:24px; height:24px; border-radius:50%; font-size:11px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; }
+.card-type-badge.land { background:var(--land-color); }
+.card-type-badge.sky { background:var(--sky-color); }
+.card-type-badge.sea { background:var(--sea-color); }
+
+#drag-overlay { position:fixed; top:0; left:0; right:0; bottom:0; z-index:1000; pointer-events:none; display:none; background: transparent; transition: background 0.3s; }
+#drag-overlay.active { display:block; background: rgba(0,0,0,0.55); }
+.skill-fan-container { position:absolute; }
+.skill-fan-item { border-radius:12px; display:flex; align-items:center; justify-content:flex-start; font-size:12px; font-weight:700; color:var(--text); text-align:left; flex-direction:column; line-height:1.3; padding:6px 8px; overflow:hidden; z-index:10; }
+.skill-fan-item.visible { background:var(--skill-pill-bg); border:2px solid var(--border-color); }
+.drag-ghost-card { position:absolute; pointer-events:none; display:none; z-index:10; }
+#drag-resource-bar { position:fixed; bottom:180px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:#fff; font-size:15px; padding:10px 24px; border-radius:12px; z-index:20; display:none; gap:20px; white-space:nowrap; pointer-events:none; }
+#drag-resource-bar.show { display:flex; }
+#drag-resource-bar .res-enough { color:#4caf50; font-weight:700; }
+#drag-resource-bar .res-short { color:#e74c3c; font-weight:700; }
+
+/* Deck Panel */
+#panel-deck { flex-direction:column; gap:12px; }
+.deck-header { display:flex; justify-content:space-between; align-items:flex-start; }
+.deck-title { font-size:24px; font-weight:700; }
+.deck-subtitle { font-size:15px; color:var(--text-muted); margin-top:4px; }
+.deck-close { background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; }
+.deck-close:hover { color:var(--text); }
+.deck-card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:10px; flex:1; overflow-y:auto; align-content:start; }
+.deck-card-item { background:var(--card-bg); border:2px solid var(--card-border); border-radius:8px; padding:14px; cursor:pointer; display:flex; flex-direction:column; gap:6px; transition:0.2s; position:relative; align-items:flex-start; }
+.deck-card-item:hover { border-color:var(--accent-gold); }
+.deck-card-item.selected { border-color:var(--accent-gold); background:rgba(232,184,109,0.08); }
+.deck-card-type-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#fff; flex-shrink:0; }
+.deck-card-type-icon.land { background:var(--land-color); }
+.deck-card-type-icon.sky { background:var(--sky-color); }
+.deck-card-type-icon.sea { background:var(--sea-color); }
+.deck-card-name { font-size:18px; font-weight:700; }
+.deck-card-name-row { display:flex; align-items:center; gap:10px; }
+.deck-card-archetypes { display:flex; gap:4px; flex-wrap:wrap; min-height:20px; }
+.archetype-tag { font-size:11px; background:rgba(108,99,255,0.2); color:var(--accent); padding:2px 8px; border-radius:8px; }
+.deck-card-archetype-badge { font-size:12px; font-weight:700; padding:2px 10px; border-radius:8px; flex-shrink:0; }
+.deck-card-archetype-badge.mengshou { background:rgba(231,76,60,0.18); color:#e74c3c; border:1px solid rgba(231,76,60,0.3); }
+.deck-card-archetype-badge.chunhui { background:rgba(76,175,80,0.18); color:#4caf50; border:1px solid rgba(76,175,80,0.3); }
+.deck-card-archetype-badge.qiqiao { background:rgba(232,184,109,0.18); color:#e8b86d; border:1px solid rgba(232,184,109,0.3); }
+.deck-card-archetype-badge.tongyong { background:rgba(255,255,255,0.06); color:var(--text-muted); border:1px solid rgba(255,255,255,0.1); }
+.deck-card-type-text { font-size:11px; color:var(--text-muted); font-weight:400; padding:1px 4px; border-radius:4px; flex-shrink:0; }
+.deck-card-type-text.land { background:rgba(139,154,75,0.15); color:var(--land-color); }
+.deck-card-type-text.sky { background:rgba(107,163,199,0.15); color:var(--sky-color); }
+.deck-card-type-text.sea { background:rgba(91,140,184,0.15); color:var(--sea-color); }
+.deck-card-skills { font-size:13px; color:var(--text-muted); line-height:1.5; padding-left:4px; width:100%; }
+.deck-card-skills span { color:var(--accent-gold); }
+.deck-skill-detail { font-size:12px; color:var(--text-muted); line-height:1.35; margin:1px 0 1px 8px; }
+.deck-skill-cost { font-size:11px; color:#a09888; }
+.deck-card-checkbox { position:absolute; top:10px; right:10px; width:22px; height:22px; cursor:pointer; accent-color:var(--accent-gold); }
+.deck-footer { display:flex; align-items:center; gap:12px; }
+.deck-selected-count { font-size:16px; color:var(--text-muted); }
+.btn-start-game { padding:12px 32px; border-radius:24px; background:var(--accent-gold); border:none; color:#fff; font-weight:700; cursor:pointer; font-size:18px; }
+.btn-start-game:disabled { opacity:0.4; cursor:not-allowed; }
+
+/* Stats Panel */
+#panel-stats { flex-direction:column; }
+.stats-modal { background:var(--panel-bg); border-radius:12px; padding:20px; max-width:900px; width:100%; margin:0 auto; }
+.stats-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.stats-modal-title { font-size:20px; font-weight:700; }
+.stats-modal-close { background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; }
+.stats-modal-close:hover { color:var(--text); }
+.stats-table-wrap { overflow-x:auto; }
+.stats-table { width:100%; border-collapse:collapse; font-size:14px; }
+.stats-table th, .stats-table td { border:1px solid var(--card-border); padding:8px 12px; text-align:center; }
+.stats-table th { background:var(--card-bg); color:var(--text-muted); }
+.stats-table td { color:var(--text); }
+
+/* System Panel */
+#panel-system { flex-direction:column; align-items:center; justify-content:center; }
+.system-card { background:var(--panel-bg); border-radius:12px; padding:30px; text-align:center; max-width:450px; width:100%; }
+.system-title { font-size:22px; font-weight:700; margin-bottom:20px; }
+.system-buttons { display:flex; flex-direction:column; gap:12px; }
+.btn-system { padding:14px 24px; border-radius:20px; border:none; font-size:18px; font-weight:600; cursor:pointer; transition:0.2s; color:#fff; }
+.btn-system.save { background:var(--success); }
+.btn-system.load { background:var(--accent); }
+.btn-system.reset { background:var(--danger); }
+.btn-system:hover { opacity:0.85; }
+
+/* Modal */
+.modal-overlay { position:fixed; top:0;left:0;right:0;bottom:0; z-index:2000; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; }
+.modal-overlay.active { display:flex; }
+.modal-dialog { background:var(--panel-bg); border-radius:12px; padding:28px; min-width:320px; max-width:90vw; text-align:center; border:1px solid var(--card-border); }
+.modal-dialog h3 { font-size:20px; margin-bottom:10px; }
+.modal-dialog p { font-size:16px; color:var(--text-muted); margin-bottom:20px; }
+.modal-buttons { display:flex; gap:12px; justify-content:center; }
+.modal-btn { padding:10px 28px; border-radius:20px; border:1px solid var(--card-border); background:var(--card-bg); color:var(--text); cursor:pointer; font-size:16px; }
+.modal-btn.confirm { background:var(--accent-gold); border-color:var(--accent-gold); color:#fff; font-weight:600; }
+.modal-btn:hover { opacity:0.85; }
+
+/* Toast */
+.toast { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); z-index:3000; background:rgba(0,0,0,0.85); color:#fff; padding:12px 28px; border-radius:20px; font-size:16px; opacity:0; visibility:hidden; transition:0.3s; white-space:nowrap; }
+.toast.show { opacity:1; visibility:visible; }
+
+/* Skill flow indicator (non-interactive) */
+.skill-flow { display:none; position:fixed; top:5px; right:10px; z-index:1500; font-size:10px; background:rgba(0,0,0,0.8); color:var(--accent-gold); padding:4px 10px; border-radius:10px; pointer-events:none; }
+
+@media (max-width:768px) {
+  .hamburger { display:flex; }
+  .sidebar { position:fixed; left:-180px; width:180px; }
+  .sidebar.open { left:0; }
+  .middle-area { flex-direction:column; }
+  .battlefield { width:100%;min-width:0; flex-direction:row; gap:16px; flex-wrap:wrap; justify-content:center; }
+  .top-bar { flex-direction:column; }
+  .skill-queue-area { width:100%; min-width:0; }
+  .deck-card-grid { grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); }
+}
+</style>
+</head>
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">Page of ChenShuLi</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+<div class="app-container">
+  <aside class="sidebar" id="sidebar">
+    <div class="nav-header">菜单</div>
+    <nav class="nav-items">
+      <a class="nav-item active" data-panel="battle"><span class="nav-icon">&#x2694;</span> 对战</a>
+      <a class="nav-item" data-panel="deck"><span class="nav-icon">&#x1F0CF;</span> 组卡</a>
+      <a class="nav-item" data-panel="stats"><span class="nav-icon">&#x1F4CA;</span> 数据</a>
+      <a class="nav-item" data-panel="system"><span class="nav-icon">&#x2699;</span> 系统</a>
+    </nav>
+  </aside>
+  <main class="main-content">
+    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    <section class="panel active" id="panel-battle">
+      <div class="top-bar">
+        <div class="battle-log" id="battle-log"></div>
       </div>
-    </div>
-  </div>
-</header>
-
-      <div class="outer">
-        <section id="main">
-  
-    <article id="post-title1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2021/05/31/title1/" class="article-date">
-  <time class="dt-published" datetime="2021-05-31T08:49:32.000Z" itemprop="datePublished">2021-05-31</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2021/05/31/title1/">title1</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>  山腰上放着半桶水。</p>
-<p>  桶里的水算不上清澈，即使只装着半桶的水，朝下望去依然见不到底；不过在看向桶底的过程中，却瞧见了倒映着的一方蓝天——如一面碧蓝的镜，修饰上几朵白云，就这样静静地睡在桶里。没有人知道这半桶水想的是什么，它只是终日呆呆地立在那儿，仰望着青天。周遭的农作物曾问起这桶中装载的东西，它思考了片刻，扭动着自己的身躯抖了抖，掂了掂自己后，才缓缓吐出一句：“水，全是水。”此后，再也没有人来问过半桶水问题，它们都觉得这半桶水太简单了——春夏秋冬，它不能像植物那般改变自己的形态颜色；日月交替，它也不能像动物一样有着自己独特的生活习性；它只是单单纯纯的半桶水。</p>
-<p>  它曾经思考过自己来到这里的原因：借着那不大的脑容量，它依稀记得是一位老妇人拼了性命般地将它送到此地。她过去也是一位年轻漂亮的姑娘，可不知为何，当她拿起了这只桶时，一切都好像改变了似的，无论风吹日晒，她只是义无反顾地向上爬着，于是，便到了山腰处。这一晃眼，便是二十年。她老了，再找不回当年的气力与干劲，她只能狠下心把桶放在这，宛若投下一颗梦想的种子，浇过水之后，剩下的都不由自己决定了。她很希望这桶能自己长出脚来，独自朝着那遥遥无期的山峰爬去。可是希望终归是希望，它依然长不出脚，它只是单单纯纯的半桶水。</p>
-<p>  它也记得，在山下时曾有过许许多多这样的桶，它们也被其他人一起带上了山，那一年，它们都是空的。上山的途中，曾下过无数场雨，每当下雨时，行路的人都不再匆忙，纷纷拿出自己的桶来盛雨。不知是否是桶口太小的缘故，当这些雨过去后，别人的桶里水已经满溢，只有这是半桶水。当它被放在山腰上后，它每一天都期盼着能够下雨，只是天公一直都不作美，自它来到这儿之后，就再没有落过一滴雨水。而它也只能夜以继日地望着天，守候着一场不确定的雨。它会做什么呢？它只是单单纯纯的半桶水。<br>  偶尔，它会尝试着“蠕动”一下。它将身子左倾，待整体翻过去之前，又全力向右倒去，如此反复，这半桶水就在那左右摇摆着。摇起来的那一刻，一种难以言表的兴奋涌上它的心头，这似乎能让它挪向远方。于是，它摇得更卖力了些，即使头晕目眩，也依然咬牙坚持着。可一天下来，它只是在原地踏步着，并没有移动半分。它搞不清楚究竟是哪里出了问题，它只是单单纯纯的半桶水。<br>  这会儿，这半桶水又在静静地凝望着天空。不知从哪里跑来的一只追逐着蝴蝶的野猫，上下乱窜着，一脚蹬翻了站在路旁的半桶水。桶便如此一翻，留下了洒了一地的水，和一个咕咚着不知要滚向何处的水桶。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2021/05/31/title1/" data-id="ckpcdzlkv0001xsuo3wo02qya" data-title="title1" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2021/05/31/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2021-05-31T08:31:44.168Z" itemprop="datePublished">2021-05-31</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2021/05/31/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2021/05/31/hello-world/" data-id="ckpcdzlkk0000xsuo9ri46cef" data-title="Hello World" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">May 2021</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2021/05/31/title1/">title1</a>
-          </li>
-        
-          <li>
-            <a href="/2021/05/31/hello-world/">Hello World</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
+      <div class="middle-area">
+        <div class="status-panel player-panel" id="panel-player"></div>
+        <div class="battlefield" id="battlefield">
+          <div class="battlefield-avatar"><div class="avatar-circle player-avatar">&#x2694;</div><span class="avatar-label">玩家</span></div>
+          <div class="vs-indicator">VS</div>
+          <div class="battlefield-avatar"><div class="avatar-circle boss-avatar">&#x2744;</div><span class="avatar-label">小小雪人</span></div>
+        </div>
+        <div class="status-panel boss-panel" id="panel-boss"></div>
       </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      
-      &copy; 2021 ShuLi Chen<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
+      <div class="bottom-bar">
+        <div class="hand-cards" id="hand-cards"></div>
+      </div>
+    </section>
+    <section class="panel" id="panel-deck">
+      <div class="deck-header"><div><div class="deck-title">&#x1F0CF; 卡组构筑</div><div class="deck-subtitle">勾选至少 8 张卡牌以开始对战</div></div><button class="deck-close" id="deck-close">&#x2715;</button></div>
+      <div class="deck-card-grid" id="deck-card-grid"></div>
+      <div class="deck-footer"><div class="deck-selected-count">已选择 <span id="deck-count">0</span> / 19 张</div><button class="btn-start-game" id="btn-start-game" disabled>&#x2694; 开始对战</button></div>
+    </section>
+    <section class="panel" id="panel-stats">
+      <div class="stats-modal"><div class="stats-modal-header"><span class="stats-modal-title">&#x1F4CA; 战斗数据统计</span><button class="stats-modal-close" id="stats-close">&#x2715;</button></div><div class="stats-table-wrap"><table class="stats-table" id="stats-table"></table></div></div>
+    </section>
+    <section class="panel" id="panel-system">
+      <div class="system-card"><div class="system-title">&#x2699; 系统设置</div><div class="system-buttons"><button class="btn-system save" id="btn-save">&#x1F4BE; 保存游戏</button><button class="btn-system load" id="btn-load">&#x1F4C2; 加载游戏</button><button class="btn-system reset" id="btn-reset">&#x1F504; 重置游戏</button></div></div>
+    </section>
+  </main>
+</div>
+<div id="drag-overlay">
+  <div class="skill-fan-container" id="skill-fan"></div>
+  <div class="drag-ghost-card" id="drag-ghost"><span class="card-name"></span></div>
+  <div id="drag-resource-bar"></div>
+</div>
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-dialog"><h3 id="modal-title"></h3><p id="modal-message"></p><div class="modal-buttons"><button class="modal-btn" id="modal-cancel">取消</button><button class="modal-btn confirm" id="modal-confirm-btn">确认</button></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
 
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function randInt(max) { return Math.floor(Math.random() * max) + 1; }
+function shuffle(arr) { for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
 
+// ===== SKILL DEFINITIONS =====
+let SKILL_DEFS = {};
 
-<script src="/js/jquery-3.4.1.min.js"></script>
+function defSkill(name, costs, desc, execFn, opts) {
+  opts = opts || {};
+  SKILL_DEFS[name] = function(slaughterNum, liquifyNum) {
+    slaughterNum = slaughterNum || 1;
+    liquifyNum = liquifyNum || 1;
+    let skill = {
+      name: name,
+      vegCost: costs.v || 0,
+      meatCost: costs.m || 0,
+      waterCost: costs.w || 0,
+      isPassive: !!opts.isPassive,
+      desc: desc,
+      logDesc: '',
+      stayRound: 0,
+      sourceCardName: '',
+      slaughterNum: slaughterNum,
+      liquifyNum: liquifyNum,
+      exec: execFn
+    };
+    return skill;
+  };
+}
 
+// Universal discard skills
+defSkill("屠宰", {}, "废弃此牌，获得肉食", function(you,enemy,ctx){
+  you.meat += this.slaughterNum;
+  this.logDesc = you.name + '获得了' + this.slaughterNum + '点肉食';
+});
+defSkill("融化", {}, "废弃此牌，获得水源", function(you,enemy,ctx){
+  you.water += this.liquifyNum;
+  this.logDesc = you.name + '获得了' + this.liquifyNum + '点水源';
+});
 
+// === Player skills ===
+defSkill("虎啸", {m:5}, "永久提升8点暴击率", function(you,enemy,ctx){
+  you.criticalRate += 8;
+  this.logDesc = you.name + '增加了8点暴击率';
+});
+defSkill("利爪挥击", {m:5}, "造成500点伤害，本次攻击临时提升8点暴击率", function(you,enemy,ctx){
+  var r = you.calcDamage(500, enemy, 8);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
+defSkill("虎虎生风", {m:18}, "造成3次500点伤害，如果造成暴击则多造成一次，至多5次", function(you,enemy,ctx){
+  var times = 3;
+  for (var i = 1; i <= times && i <= 5; i++) {
+    var r = you.calcDamage(500, enemy, 0);
+    enemy.hp -= r.dmg;
+    this.logDesc = '第' + i + '次攻击，' + you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+    if (i < times) ctx.addLog(this.logDesc);
+    if (r.isCrit && times < 5) times++;
+  }
+});
+defSkill("锐利目光", {m:2}, "接下来3回合降低10点受到的异常状态施加成功率", function(you,enemy,ctx){
+  you.addBuff(makeBuff("锐利目光", true, 3, "降低10点异常状态施加成功率", {}, function(r){return Math.max(0, r - 10);}));
+  this.logDesc = you.name + '获得了锐利目光增益';
+});
+defSkill("翅膀攻击", {m:4}, "造成500点伤害", function(you,enemy,ctx){
+  var r = you.calcDamage(500, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
+defSkill("鹰击长空", {m:10}, "造成800点伤害，下回合你多抽1张牌，对方少抽1张牌", function(you,enemy,ctx){
+  var r = you.calcDamage(800, enemy, 0);
+  enemy.hp -= r.dmg;
+  you.addBuff(makeBuff("鹰击长空", true, 1, "多抽一张牌", {draw:function(c){return c+1;}}));
+  enemy.addBuff(makeBuff("鹰击长空", false, 1, "少抽一张牌", {draw:function(c){return Math.max(c-1, 1);}}));
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
+defSkill("戏水", {v:1}, "获得5点湖泊经验", function(you,enemy,ctx){
+  you.water_exp += 5;
+  this.logDesc = you.name + '增加了5点湖泊经验';
+});
+defSkill("水幕", {w:3}, "回复400点体力，有10%几率让对方暴击率下降5点", function(you,enemy,ctx){
+  var heal = you.calcCure(400);
+  you.hp += heal;
+  this.logDesc = you.name + '回复了' + heal + '点体力';
+  if (enemy.judgeDebuff(10, you)) {
+    enemy.criticalRate -= 5;
+    ctx.addLog('降低了' + enemy.name + '5点暴击率');
+  }
+});
+defSkill("潜水", {w:5}, "造成300点伤害，获得10点湖泊经验", function(you,enemy,ctx){
+  var r = you.calcDamage(300, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+  ctx.addLog(this.logDesc);
+  you.water_exp += 10;
+  this.logDesc = you.name + '获得了10点湖泊经验';
+});
+defSkill("自在", {v:2}, "回复200点体力，下回合受到的伤害降低10%", function(you,enemy,ctx){
+  var heal = you.calcCure(200);
+  you.hp += heal;
+  you.addBuff(makeBuff("自在", true, 1, "受到的伤害降低10%", {defend:function(d){return Math.floor(d*0.9);}}));
+  this.logDesc = you.name + '回复了' + heal + '点体力';
+});
+defSkill("悠然自得", {v:5}, "增加400点体力上限，同时回复400点体力", function(you,enemy,ctx){
+  you.max_hp += 400;
+  var heal = you.calcCure(400);
+  you.hp += heal;
+  this.logDesc = you.name + '增加了400点体力上限，回复了' + heal + '点体力';
+});
+defSkill("蛮力", {v:3,m:2}, "造成700点伤害，下回合少抽一张牌", function(you,enemy,ctx){
+  var r = you.calcDamage(700, enemy, 0);
+  enemy.hp -= r.dmg;
+  you.addBuff(makeBuff("蛮力", false, 1, "少抽一张牌", {draw:function(c){return Math.max(c-1,1);}}));
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
+defSkill("加速", {m:4}, "永久提升3点暴击率和8点暴击伤害", function(you,enemy,ctx){
+  you.criticalRate += 3;
+  you.criticalDamage += 8;
+  this.logDesc = you.name + '增加了3点暴击率和8点暴击伤害';
+});
+defSkill("风驰电掣", {m:0}, "消耗至多10点肉食，造成100×消耗的肉食的伤害", function(you,enemy,ctx){
+  var consume = Math.min(10, you.meat);
+  you.meat -= consume;
+  var r = you.calcDamage(consume * 100, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '消耗了' + consume + '点肉食对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
+defSkill("闪击", {m:5}, "造成300点伤害，有40点几率再造成300点伤害", function(you,enemy,ctx){
+  var r = you.calcDamage(300, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+  if (randInt(100) <= 40) {
+    ctx.addLog(this.logDesc);
+    var r2 = you.calcDamage(300, enemy, 0);
+    enemy.hp -= r2.dmg;
+    this.logDesc = you.name + '对' + enemy.name + '再次造成了' + r2.dmg + '点伤害';
+  }
+});
+defSkill("优雅", {v:2}, "有80点几率降低20%对方造成的伤害一回合", function(you,enemy,ctx){
+  if (enemy.judgeDebuff(80, you)) {
+    enemy.addBuff(makeBuff("优雅", false, 1, "降低20%造成的伤害", {damage:function(d){return Math.floor(d*0.8);}}));
+    this.logDesc = you.name + '降低了' + enemy.name + '造成的伤害';
+  } else {
+    this.logDesc = you.name + '使用优雅，但是失败了';
+  }
+});
+defSkill("洞若观火", {v:5}, "提升20点异常状态施加成功率两回合", function(you,enemy,ctx){
+  you.addBuff(makeBuff("洞若观火", true, 2, "提升20点异常状态施加成功率", {}, function(r){return r+20;}));
+  this.logDesc = you.name + '获得了洞若观火状态';
+});
+defSkill("疯狂乱抓", {w:10}, "造成2~5次300点伤害", function(you,enemy,ctx){
+  var times = randInt(4) + 1;
+  for (var i = 1; i <= times; i++) {
+    var r = you.calcDamage(300, enemy, 0);
+    enemy.hp -= r.dmg;
+    this.logDesc = '击中' + i + '次，' + you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+    if (i < times) ctx.addLog(this.logDesc);
+  }
+});
+defSkill("报晓", {v:1}, "获得5点农田经验", function(you,enemy,ctx){
+  you.vegetarian_exp += 5;
+  this.logDesc = you.name + '增加了5点农田经验';
+});
+defSkill("啄击", {v:4}, "造成350点伤害，本次攻击临时提升10点暴击率", function(you,enemy,ctx){
+  var r = you.calcDamage(350, enemy, 10);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
+defSkill("换新天", {v:10}, "清除我方受到的所有异常状态", function(you,enemy,ctx){
+  you.removeAllDebuffs();
+  this.logDesc = you.name + '清除了所有异常状态';
+});
+defSkill("夹紧", {v:2}, "有30点几率减少对方5点素食", function(you,enemy,ctx){
+  if (enemy.judgeDebuff(30, you)) {
+    enemy.vegetarian -= 5;
+    this.logDesc = you.name + '减少了' + enemy.name + '5点素食';
+  } else {
+    this.logDesc = you.name + '使用夹紧失败了';
+  }
+});
+defSkill("螃蟹拳", {w:5}, "造成500点伤害，有50点几率降低对方4点抵挡率", function(you,enemy,ctx){
+  var r = you.calcDamage(500, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+  if (enemy.judgeDebuff(50, you)) {
+    ctx.addLog(this.logDesc);
+    enemy.defendRate -= 4;
+    this.logDesc = you.name + '减少了' + enemy.name + '4点抵挡率';
+  }
+});
+defSkill("横行", {w:5}, "接下来3回合提高15%造成的伤害", function(you,enemy,ctx){
+  you.addBuff(makeBuff("横行", true, 3, "提高15%造成的伤害", {damage:function(d){return Math.floor(d*1.15);}}));
+  this.logDesc = you.name + '提高了自身造成的伤害';
+});
+defSkill("啃咬", {m:3}, "造成200点伤害，有15点几率降低对方20%治疗效果两回合", function(you,enemy,ctx){
+  var r = you.calcDamage(200, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+  if (enemy.judgeDebuff(15, you)) {
+    ctx.addLog(this.logDesc);
+    enemy.addBuff(makeBuff("啃咬", false, 2, "减少20%治疗效果", {cure:function(c){return Math.floor(c*0.8);}}));
+    this.logDesc = you.name + '降低了' + enemy.name + '20%治疗效果';
+  }
+});
+defSkill("缩壳", {w:6}, "永久提升6点抵挡率", function(you,enemy,ctx){
+  you.defendRate += 6;
+  this.logDesc = you.name + '增加了6点抵挡率';
+});
+defSkill("破壳而出", {w:2}, "至多将10点抵挡率转化为等量的暴击率和暴击伤害", function(you,enemy,ctx){
+  var val = Math.min(10, you.defendRate);
+  you.criticalRate += val;
+  you.criticalDamage += val;
+  you.defendRate -= val;
+  this.logDesc = you.name + '将' + val + '点抵挡率转化为了等量的暴击率和暴击伤害';
+});
+defSkill("种瓜得瓜", {v:0}, "获得2点素食，如果在技能盘中停留过，则改为获得8点素食", function(you,enemy,ctx){
+  var gain = this.stayRound > 0 ? 8 : 2;
+  you.vegetarian += gain;
+  this.logDesc = you.name + '获得了' + gain + '点素食';
+});
+defSkill("猛撞", {v:5}, "你每有1000点体力上限，本次伤害提高100点", function(you,enemy,ctx){
+  var dmg = Math.floor(you.max_hp / 1000) * 100;
+  var r = you.calcDamage(dmg, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
+defSkill("藏匿", {v:1}, "立即结束你本回合，技能盘中每有一个未释放的技能，为你增加1点素食", function(you,enemy,ctx){
+  you.addBuff(makeBuff("藏匿", true, 1, "跳过本回合技能执行"));
+  var qs = game.queuedForPlayer(you);
+  var vg = Math.max(0, qs - 1);
+  you.vegetarian += vg;
+  this.logDesc = you.name + '躲了起来，获得了' + vg + '点素食';
+});
+defSkill("伺机待发", {w:8}, "造成300点伤害，每在技能盘中停留一回合多造成500点伤害", function(you,enemy,ctx){
+  var r = you.calcDamage(300 + 500 * this.stayRound, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
+defSkill("繁盛", {v:5}, "提高20%治疗效果，持续两回合", function(you,enemy,ctx){
+  you.addBuff(makeBuff("繁盛增益", true, 2, "提高20%治疗效果", {cure:function(c){return Math.floor(c*1.2);}}));
+  this.logDesc = you.name + '获得了繁盛增益';
+});
+defSkill("生机勃发", {v:5}, "回复400点体力，每有5点素食则回复效率提高20%，最多提升至100%", function(you,enemy,ctx){
+  var lvls = Math.min(Math.floor(you.vegetarian / 5), 5);
+  var mult = 1 + lvls * 0.2;
+  var actualCure = Math.floor(400 * mult);
+  var heal = you.calcCure(actualCure);
+  you.hp += heal;
+  this.logDesc = you.name + '回复了' + heal + '点体力（' + lvls + '层效果，提升' + (lvls * 20) + '%）';
+});
+defSkill("燕归巢", {v:3}, "造成300点伤害，如果素食数量大于10点则下一回合多抽一张牌", function(you,enemy,ctx){
+  var r = you.calcDamage(300, enemy, 0);
+  enemy.hp -= r.dmg;
+  if (you.vegetarian > 10) {
+    you.addBuff(makeBuff("燕归巢增益", true, 1, "下回合多抽一张牌", {draw:function(c){return c+1;}}));
+    this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害，且获得了燕归巢增益';
+  } else {
+    this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+  }
+});
+defSkill("空气切割", {v:4}, "造成300点伤害，本次攻击临时提升15点暴击率", function(you,enemy,ctx){
+  var r = you.calcDamage(300, enemy, 15);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
 
-  
-<script src="/fancybox/jquery.fancybox.min.js"></script>
+// === Qiqiao skills ===
+defSkill("月相", {}, "月相：新月→上弦月→满月→下弦月→新月（被动）", function(you,enemy,ctx){}, {isPassive:true});
+defSkill("祈祷", {v:2}, "将月相推进两个阶段", function(you,enemy,ctx){
+  you.advanceMoon(2);
+  this.logDesc = you.name + '祈祷后月相变更为' + you.moonPhaseName();
+});
+defSkill("祭典", {v:2}, "仅在新月时生效，获得6点素食、肉食和水源，将月相推进下一阶段", function(you,enemy,ctx){
+  if (you.moonPhase === 0) {
+    you.vegetarian += 6;
+    you.meat += 6;
+    you.water += 6;
+    this.logDesc = you.name + '举办了祭典，获得6点素食、6点肉食、6点水源';
+  } else {
+    this.logDesc = you.name + '祭典需要在新月时才能生效（当前为' + you.moonPhaseName() + '）';
+  }
+  you.advanceMoon(1);
+});
+defSkill("月影摇光", {m:3}, "根据月相造成对应伤害：新月-100点，弦月-400点，满月-800点，将月相推进下一阶段", function(you,enemy,ctx){
+  var baseDmgMap = [100, 400, 400, 800];
+  var baseDmg = baseDmgMap[you.moonPhase] || 400;
+  var r = you.calcDamage(baseDmg, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '在' + you.moonPhaseName() + '下释放月影摇光，对' + enemy.name + '造成' + r.dmg + '点伤害';
+  you.advanceMoon(1);
+});
+defSkill("新月重现", {m:6}, "将月相重置为新月，下一回合多抽一张牌", function(you,enemy,ctx){
+  you.resetMoon();
+  you.addBuff(makeBuff("捣药-牌", true, 1, "下回合多抽一张牌", {draw:function(c){return c+1;}}));
+  this.logDesc = you.name + '将月相重置为新月，下回合将多抽一张牌';
+});
+defSkill("辉光", {m:3}, "根据月相有对应几率让对方技能消耗+1：新月-80%，弦月-55%，满月-30%，将月相推进下一阶段", function(you,enemy,ctx){
+  var rates = [80, 55, 55, 30];
+  this.logDesc = you.name + '在' + you.moonPhaseName() + '下释放辉光';
+  if (enemy.judgeDebuff(rates[you.moonPhase] || 30, you)) {
+    enemy.addBuff(makeBuff("技能消耗+1", false, 1, "下一技能消耗+1"));
+    this.logDesc += '，' + enemy.name + '下次技能消耗+1';
+  } else {
+    this.logDesc += '，但未能影响' + enemy.name;
+  }
+  you.advanceMoon(1);
+});
+defSkill("捣药", {v:4}, "随机效果：30%提高20%伤害/30%降低20%受伤/30%多抽一张牌/10%回复1000体力", function(you,enemy,ctx){
+  var roll = randInt(100);
+  if (roll <= 30) {
+    you.addBuff(makeBuff("捣药-攻", true, 2, "提高20%造成的伤害", {damage:function(d){return Math.floor(d*1.2);}}));
+    this.logDesc = you.name + '捣药成功！伤害提高20%两回合';
+  } else if (roll <= 60) {
+    you.addBuff(makeBuff("捣药-防", true, 2, "降低20%受到的伤害", {defend:function(d){return Math.floor(d*0.8);}}));
+    this.logDesc = you.name + '捣药成功！受到的伤害降低20%两回合';
+  } else if (roll <= 90) {
+    you.addBuff(makeBuff("捣药-牌", true, 1, "下回合多抽一张牌", {draw:function(c){return c+1;}}));
+    this.logDesc = you.name + '捣药成功！下回合多抽一张牌';
+  } else {
+    var heal = you.calcCure(1000);
+    you.hp += heal;
+    this.logDesc = you.name + '捣药成功！回复' + heal + '点体力';
+  }
+});
+defSkill("明月光辉", {v:6}, "造成600点伤害，根据月相获得吸血：新月-10%，弦月-30%，满月-50%，将月相推进下一阶段", function(you,enemy,ctx){
+  var r = you.calcDamage(600, enemy, 0);
+  enemy.hp -= r.dmg;
+  var lifeRates = [0.1, 0.3, 0.5, 0.3];
+  var lifesteal = Math.floor(r.dmg * (lifeRates[you.moonPhase] || 0.3));
+  if (lifesteal > 0) you.hp += lifesteal;
+  this.logDesc = you.name + '在' + you.moonPhaseName() + '下释放明月光辉，对' + enemy.name + '造成' + r.dmg + '点伤害，吸血' + lifesteal + '点';
+  you.advanceMoon(1);
+});
+defSkill("涨潮", {w:3}, "仅在新月时生效，获得20点湖泊经验，将月相推进下一阶段", function(you,enemy,ctx){
+  if (you.moonPhase === 0) {
+    you.water_exp += 20;
+    this.logDesc = you.name + '涨潮了！获得20点湖泊经验';
+  } else {
+    this.logDesc = you.name + '涨潮需要在新月时才能生效（当前为' + you.moonPhaseName() + '）';
+  }
+  you.advanceMoon(1);
+});
+defSkill("波涛之怒", {w:20}, "仅在满月时生效，造成800点伤害3次，将月相推进下一阶段", function(you,enemy,ctx){
+  if (you.moonPhase === 2) {
+    var total = 0;
+    for (var i = 0; i < 3; i++) {
+      var r = you.calcDamage(800, enemy, 0);
+      enemy.hp -= r.dmg;
+      total += r.dmg;
+      if (i < 2) ctx.addLog('波涛之怒第' + (i+1) + '击造成' + r.dmg + '点伤害');
+    }
+    this.logDesc = you.name + '在满月下释放波涛之怒，共造成' + total + '点伤害';
+  } else {
+    this.logDesc = you.name + '波涛之怒需要在满月时才能生效（当前为' + you.moonPhaseName() + '）';
+  }
+  you.advanceMoon(1);
+});
 
+// === Boss skills ===
+defSkill("霜冻", {w:2}, "减少对方10点农田经验", function(you,enemy,ctx){
+  enemy.vegetarian_exp -= 10;
+  this.logDesc = you.name + '减少了' + enemy.name + '10点农田经验';
+});
+defSkill("撞击", {w:3}, "造成300点伤害", function(you,enemy,ctx){
+  var r = you.calcDamage(300, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+});
+defSkill("极寒", {w:4}, "造成200点伤害，如果对方受到寒气逼人的影响，则改为造成1000点伤害", function(you,enemy,ctx){
+  if (enemy.hasDeBuff("寒气逼人")) {
+    var r = you.calcDamage(1000, enemy, 0);
+    enemy.hp -= r.dmg;
+    this.logDesc = '受到寒气逼人的影响，' + you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+  } else {
+    var r = you.calcDamage(200, enemy, 0);
+    enemy.hp -= r.dmg;
+    this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+  }
+});
+defSkill("涓流", {w:2}, "获得8点湖泊经验", function(you,enemy,ctx){
+  you.water_exp += 8;
+  this.logDesc = you.name + '增加了8点湖泊经验';
+});
+defSkill("寒气逼人", {w:6}, "造成400点伤害，有60%几率让对方2回合少抽一张牌", function(you,enemy,ctx){
+  var r = you.calcDamage(400, enemy, 0);
+  enemy.hp -= r.dmg;
+  this.logDesc = you.name + '对' + enemy.name + '造成了' + r.dmg + '点伤害';
+  if (enemy.judgeDebuff(60, you)) {
+    ctx.addLog(this.logDesc);
+    enemy.addBuff(makeBuff("寒气逼人", false, 2, "少抽一张牌", {draw:function(c){return Math.max(c-1, 1);}}));
+    this.logDesc = you.name + '对' + enemy.name + '成功施加了寒气逼人状态';
+  }
+});
+defSkill("寒冰塑体", {w:6}, "回复500点体力，两回合内减少20%受到的伤害", function(you,enemy,ctx){
+  var heal = you.calcCure(500);
+  you.hp += heal;
+  you.addBuff(makeBuff("寒冰塑体", true, 2, "降低20%受到的伤害", {defend:function(d){return Math.floor(d*0.8);}}));
+  this.logDesc = you.name + '以寒冰塑体，回复了' + heal + '点体力';
+});
+defSkill("寒冬入境", {w:0}, "将素食或肉食的最高者按80%比例转换为水源", function(you,enemy,ctx){
+  if (you.vegetarian >= you.meat) {
+    var n = Math.floor(you.vegetarian * 0.8);
+    you.vegetarian = 0;
+    you.water += n;
+    this.logDesc = you.name + '将所有素食转换成了' + n + '点水源';
+  } else {
+    var n = Math.floor(you.meat * 0.8);
+    you.meat = 0;
+    you.water += n;
+    this.logDesc = you.name + '将所有肉食转换成了' + n + '点水源';
+  }
+});
 
+// ===== BUFF FACTORY =====
+function makeBuff(name, isBuff, lastRound, desc, effects, judgeFn) {
+  effects = effects || {};
+  return {
+    name: name,
+    isBuff: isBuff,
+    lastRound: lastRound,
+    isPermanent: false,
+    description: desc || name,
+    damageBuffEffect: effects.damage || function(d){return d;},
+    defendBuffEffect: effects.defend || function(d){return d;},
+    drawCardBuffEffect: effects.draw || function(c){return c;},
+    judgeBuffEffect: judgeFn || function(r){return r;},
+    cureBuffEffect: effects.cure || function(c){return c;}
+  };
+}
 
+// ===== MOON PHASE BUFF =====
+function makeMoonPhaseBuff() {
+  var b = makeBuff("月相", true, 999, "新月");
+  b.isPermanent = true;
+  b.phase = 0;
+  b.description = "新月";
+  b.advancePhase = function(steps) {
+    this.phase = (this.phase + steps) % 4;
+    this.description = ["新月", "上弦月", "满月", "下弦月"][this.phase];
+  };
+  return b;
+}
 
-<script src="/js/script.js"></script>
+// ===== CARD DATA =====
+var ALL_PLAYER_CARDS = [
+  {id:"Tiger",name:"老虎",type:"LAND",slaughterNum:1,archetype:"猛兽",skills:["虎啸","利爪挥击","虎虎生风"]},
+  {id:"Eagle",name:"鹰",type:"SKY",slaughterNum:1,archetype:"猛兽",skills:["锐利目光","翅膀攻击","鹰击长空"]},
+  {id:"Duck",name:"鸭",type:"SEA",slaughterNum:1,archetype:"",skills:["戏水","水幕","潜水"]},
+  {id:"Pig",name:"猪",type:"LAND",slaughterNum:2,archetype:"",skills:["自在","悠然自得","蛮力"]},
+  {id:"Cheetah",name:"猎豹",type:"LAND",slaughterNum:1,archetype:"猛兽",skills:["加速","风驰电掣","闪击"]},
+  {id:"Cat",name:"猫",type:"LAND",slaughterNum:1,archetype:"",skills:["优雅","洞若观火","疯狂乱抓"]},
+  {id:"Chook",name:"鸡",type:"SKY",slaughterNum:1,archetype:"",skills:["报晓","啄击","换新天"]},
+  {id:"Crab",name:"螃蟹",type:"SEA",slaughterNum:1,archetype:"",skills:["夹紧","螃蟹拳","横行"]},
+  {id:"Turtle",name:"乌龟",type:"SEA",slaughterNum:1,archetype:"",skills:["啃咬","缩壳","破壳而出"]},
+  {id:"Buffalo",name:"水牛",type:"LAND",slaughterNum:2,archetype:"春晖",skills:["种瓜得瓜","猛撞"]},
+  {id:"Mouse",name:"老鼠",type:"LAND",slaughterNum:1,archetype:"",skills:["藏匿","啃咬"]},
+  {id:"Nycticorax",name:"夜鹭",type:"SKY",slaughterNum:1,archetype:"",skills:["伺机待发"]},
+  {id:"SikaDeer",name:"梅花鹿",type:"LAND",slaughterNum:1,archetype:"春晖",skills:["繁盛","生机勃发"]},
+  {id:"Swallow",name:"燕子",type:"SKY",slaughterNum:1,archetype:"春晖",skills:["燕归巢","空气切割"]},
+  {id:"CatElder",name:"乞巧族-猫长老",type:"LAND",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","祭典"]},
+  {id:"MouseWarrior",name:"乞巧族-鼠力士",type:"LAND",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","月影摇光"]},
+  {id:"FoxProphet",name:"乞巧族-狐先知",type:"LAND",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","新月重现","辉光"]},
+  {id:"MoonRabbit",name:"乞巧族-月桂兔",type:"SKY",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","捣药","明月光辉"]},
+  {id:"GoldfishSaint",name:"乞巧族-金鱼圣女",type:"SEA",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","涨潮","波涛之怒"]}
+];
 
+var ALL_BOSS_CARDS = [
+  {id:"WinterEntryCard",name:"寒冬入境",type:"SEA",liquifyNum:1,skills:["寒冬入境"]},
+  {id:"IceBarrierCard",name:"寒冰塑体",type:"SEA",liquifyNum:1,skills:["寒冰塑体"]},
+  {id:"ChillCard",name:"寒气逼人",type:"SEA",liquifyNum:1,skills:["寒气逼人"]},
+  {id:"TrickletCard",name:"涓流",type:"SEA",liquifyNum:1,skills:["涓流"]},
+  {id:"ArcticCard",name:"极寒",type:"SEA",liquifyNum:1,skills:["极寒"]},
+  {id:"KnockCard",name:"撞击",type:"SEA",liquifyNum:1,skills:["撞击"]},
+  {id:"FrostCard",name:"霜冻",type:"SEA",liquifyNum:1,skills:["霜冻"]}
+];
 
+// ===== CARD FACTORY =====
+function createCard(cardDef) {
+  var skills = [];
+  var hasSlaughter = cardDef.slaughterNum !== undefined;
+  var hasLiquify = cardDef.liquifyNum !== undefined;
+  for (var si = 0; si < cardDef.skills.length; si++) {
+    var sn = cardDef.skills[si];
+    var fn = SKILL_DEFS[sn];
+    if (fn) {
+      var s = fn(cardDef.slaughterNum || 1, cardDef.liquifyNum || 1);
+      s.sourceCardName = cardDef.name;
+      skills.push(s);
+    }
+  }
+  if (hasSlaughter) {
+    var ss = SKILL_DEFS["屠宰"](cardDef.slaughterNum || 1, cardDef.liquifyNum || 1);
+    ss.sourceCardName = cardDef.name;
+    skills.push(ss);
+  } else if (hasLiquify) {
+    var ms = SKILL_DEFS["融化"](cardDef.slaughterNum || 1, cardDef.liquifyNum || 1);
+    ms.sourceCardName = cardDef.name;
+    skills.push(ms);
+  }
+  return {
+    name: cardDef.name,
+    type: cardDef.type,
+    skills: skills,
+    id: cardDef.id,
+    archetype: cardDef.archetype || "",
+    slaughterNum: cardDef.slaughterNum || 0,
+    liquifyNum: cardDef.liquifyNum || 0
+  };
+}
 
+// ===== RESOURCE LEVEL CONFIG =====
+var LEVEL_EXP = [0, 10, 20, 40, 60];
+var LEVEL_TO_NUM = [0, 3, 4, 6, 8, 12];
 
+// ===== PLAYER CLASS =====
+function Player(name, isBoss, maxHp) {
+  this.name = name;
+  this.isBoss = !!isBoss;
+  this.max_hp = maxHp || 5000;
+  this._hp = this.max_hp;
+  this._veg = 1;
+  this.vegetarian_level = 1;
+  this._vegExp = 0;
+  this._meat = 1;
+  this.meat_level = 1;
+  this._meatExp = 0;
+  this._wat = 1;
+  this.water_level = 1;
+  this._waterExp = 0;
+  this._critR = 0;
+  this._critD = 150;
+  this._defR = 5;
+  this.cardStack = [];
+  this.usedCardStack = [];
+  this.cardList = [];
+  this.buffs = [];
+  this.debuffs = [];
+  this.skillQueue = [];
+  this.cardStatsMap = {};
+  this.cardTypeList = [];
+}
 
-  </div>
+Player.prototype = {
+  get moonPhase() {
+    for (var i = 0; i < this.buffs.length; i++) {
+      if (this.buffs[i].name === "月相") return this.buffs[i].phase;
+    }
+    return 0;
+  },
+
+  moonPhaseName: function() {
+    return ["新月", "上弦月", "满月", "下弦月"][this.moonPhase];
+  },
+
+  advanceMoon: function(steps) {
+    for (var i = 0; i < this.buffs.length; i++) {
+      if (this.buffs[i].name === "月相") {
+        this.buffs[i].advancePhase(steps);
+        this.buffs[i].description = this.moonPhaseName();
+        return;
+      }
+    }
+  },
+
+  resetMoon: function() {
+    for (var i = 0; i < this.buffs.length; i++) {
+      if (this.buffs[i].name === "月相") {
+        this.buffs[i].phase = 0;
+        this.buffs[i].description = "新月";
+        return;
+      }
+    }
+  },
+
+  initCardStack: function(selectedDefs) {
+    this.cardTypeList = selectedDefs.map(function(d) { return d.id; });
+    this.cardStack = [];
+    this.usedCardStack = [];
+    this.cardList = [];
+    this.buffs = [];
+    this.debuffs = [];
+    for (var di = 0; di < selectedDefs.length; di++) {
+      for (var i = 0; i < 4; i++) {
+        this.cardStack.push(createCard(selectedDefs[di]));
+      }
+    }
+    shuffle(this.cardStack);
+    var hasQiqiao = false;
+    for (var di2 = 0; di2 < selectedDefs.length; di2++) {
+      if (selectedDefs[di2].archetype === "乞巧") { hasQiqiao = true; break; }
+    }
+    if (hasQiqiao) {
+      this.addBuff(makeMoonPhaseBuff());
+    }
+  },
+
+  resetStats: function() {
+    this.max_hp = this.isBoss ? 8000 : 5000;
+    this._hp = this.max_hp;
+    this._veg = 1; this.vegetarian_level = 1; this._vegExp = 0;
+    this._meat = 1; this.meat_level = 1; this._meatExp = 0;
+    this._wat = 1; this.water_level = 1; this._waterExp = 0;
+    this._critR = 0; this._critD = 150; this._defR = 5;
+    this.cardStatsMap = {};
+    this.skillQueue = [];
+  },
+
+  isResEnough: function(skill) {
+    var costUp = this.hasDeBuff("技能消耗+1") ? 1 : 0;
+    var vOK = this.vegetarian >= skill.vegCost + (skill.vegCost > 0 ? costUp : 0);
+    var mOK = this.meat >= skill.meatCost + (skill.meatCost > 0 ? costUp : 0);
+    var wOK = this.water >= skill.waterCost + (skill.waterCost > 0 ? costUp : 0);
+    return vOK && mOK && wOK;
+  },
+
+  canUseSkill: function(skill) {
+    var pendingVeg = 0, pendingMeat = 0, pendingWater = 0;
+    for (var i = 0; i < this.skillQueue.length; i++) {
+      pendingVeg += this.skillQueue[i].vegCost;
+      pendingMeat += this.skillQueue[i].meatCost;
+      pendingWater += this.skillQueue[i].waterCost;
+    }
+    if (skill.vegCost > 0) return this.vegetarian >= pendingVeg + skill.vegCost;
+    if (skill.meatCost > 0) return this.meat >= pendingMeat + skill.meatCost;
+    if (skill.waterCost > 0) return this.water >= pendingWater + skill.waterCost;
+    return true;
+  },
+
+  consumeResourcesExact: function(skill) {
+    var vUsed = skill.vegCost, mUsed = skill.meatCost, wUsed = skill.waterCost;
+    if (this.hasDeBuff("技能消耗+1")) {
+      if (skill.vegCost > 0) vUsed += 1;
+      if (skill.meatCost > 0) mUsed += 1;
+      if (skill.waterCost > 0) wUsed += 1;
+    }
+    this._veg -= vUsed;
+    this._meat -= mUsed;
+    this._wat -= wUsed;
+    return { vUsed: vUsed, mUsed: mUsed, wUsed: wUsed };
+  },
+
+  calcDamage: function(damage, enemy, tempCritRate) {
+    tempCritRate = tempCritRate || 0;
+    var d = damage;
+    var isCrit = false;
+    if (randInt(100) <= this.criticalRate + tempCritRate) {
+      d = Math.floor(d * this.criticalDamage / 100);
+      isCrit = true;
+      game.addLog(this.name + '打出了暴击！！！');
+    }
+    for (var i = 0; i < this.buffs.length; i++) d = this.buffs[i].damageBuffEffect(d);
+    for (var i2 = 0; i2 < this.debuffs.length; i2++) d = this.debuffs[i2].damageBuffEffect(d);
+    for (var j = 0; j < enemy.buffs.length; j++) d = enemy.buffs[j].defendBuffEffect(d);
+    for (var j2 = 0; j2 < enemy.debuffs.length; j2++) d = enemy.debuffs[j2].defendBuffEffect(d);
+    if (randInt(100) <= enemy.defendRate) {
+      d = Math.floor(d * 0.4);
+      game.addLog(enemy.name + '抵挡了本次攻击，减免了60%伤害');
+    }
+    return { dmg: Math.floor(d), isCrit: isCrit };
+  },
+
+  calcCure: function(cureValue) {
+    var c = cureValue;
+    for (var i = 0; i < this.buffs.length; i++) c = this.buffs[i].cureBuffEffect(c);
+    for (var i2 = 0; i2 < this.debuffs.length; i2++) c = this.debuffs[i2].cureBuffEffect(c);
+    return Math.floor(c);
+  },
+
+  judgeDebuff: function(rate, caster) {
+    var r = rate;
+    for (var i = 0; i < this.buffs.length; i++) r = this.buffs[i].judgeBuffEffect(r);
+    for (var i2 = 0; i2 < this.debuffs.length; i2++) r = this.debuffs[i2].judgeBuffEffect(r);
+    for (var j = 0; j < caster.buffs.length; j++) r = caster.buffs[j].judgeBuffEffect(r);
+    for (var j2 = 0; j2 < caster.debuffs.length; j2++) r = caster.debuffs[j2].judgeBuffEffect(r);
+    return randInt(100) <= r;
+  },
+
+  addBuff: function(buff) {
+    var list = buff.isBuff ? this.buffs : this.debuffs;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].name === buff.name) {
+        list[i].lastRound = Math.max(list[i].lastRound, buff.lastRound);
+        return;
+      }
+    }
+    list.push(buff);
+  },
+
+  hasBuff: function(name) {
+    for (var i = 0; i < this.buffs.length; i++) {
+      if (this.buffs[i].name === name) return true;
+    }
+    return false;
+  },
+
+  hasDeBuff: function(name) {
+    for (var i = 0; i < this.debuffs.length; i++) {
+      if (this.debuffs[i].name === name) return true;
+    }
+    return false;
+  },
+
+  removeAllDebuffs: function() {
+    this.debuffs = [];
+  },
+
+  drawCard: function() {
+    if (this.cardStack.length === 0) {
+      this.cardStack = shuffle(this.usedCardStack.slice());
+      this.usedCardStack = [];
+    }
+    if (this.cardStack.length === 0) return;
+    this.cardList.push(this.cardStack.shift());
+  },
+
+  getResources: function() {
+    this._veg += LEVEL_TO_NUM[this.vegetarian_level];
+    this._meat += LEVEL_TO_NUM[this.meat_level];
+    this._wat += LEVEL_TO_NUM[this.water_level];
+  },
+
+  calcExp: function(value, type) {
+    var level;
+    if (type === 0) level = this.vegetarian_level;
+    else if (type === 1) level = this.meat_level;
+    else level = this.water_level;
+    var needExp = LEVEL_EXP[level] || 999;
+    if (value >= needExp) {
+      if (type === 0) {
+        this.vegetarian_level = Math.min(5, this.vegetarian_level + 1);
+        game.addLog(this.name + '的农田升级，当前等级为' + this.vegetarian_level);
+      } else if (type === 1) {
+        this.meat_level = Math.min(5, this.meat_level + 1);
+        game.addLog(this.name + '的牧场升级，当前等级为' + this.meat_level);
+      } else {
+        this.water_level = Math.min(5, this.water_level + 1);
+        game.addLog(this.name + '的湖泊升级，当前等级为' + this.water_level);
+      }
+      return value - needExp;
+    }
+    return value;
+  },
+
+  useSkill: function(card, skill) {
+    skill.sourceCardName = card.name;
+    this.skillQueue.push(skill);
+    var idx = this.cardList.indexOf(card);
+    if (idx >= 0) {
+      this.cardList.splice(idx, 1);
+      this.usedCardStack.push(card);
+    }
+    game.addLog(this.name + '释放了' + skill.name);
+  },
+
+  recordStats: function(skill, damage, heal, vegUsed, meatUsed, waterUsed) {
+    var cn = skill.sourceCardName;
+    if (!cn) return;
+    if (!this.cardStatsMap[cn]) {
+      this.cardStatsMap[cn] = { name: cn, timesUsed: 0, totalDamage: 0, totalHeal: 0, totalVeg: 0, totalMeat: 0, totalWater: 0 };
+    }
+    var s = this.cardStatsMap[cn];
+    s.timesUsed++;
+    s.totalDamage += damage || 0;
+    s.totalHeal += heal || 0;
+    s.totalVeg += vegUsed || 0;
+    s.totalMeat += meatUsed || 0;
+    s.totalWater += waterUsed || 0;
+  }
+};
+
+// Properties
+Object.defineProperty(Player.prototype, 'hp', {
+  get: function() { return this._hp; },
+  set: function(v) { this._hp = clamp(Math.floor(v), 0, this.max_hp); }
+});
+Object.defineProperty(Player.prototype, 'vegetarian', {
+  get: function() { return this._veg; },
+  set: function(v) { this._veg = Math.max(0, Math.floor(v)); }
+});
+Object.defineProperty(Player.prototype, 'meat', {
+  get: function() { return this._meat; },
+  set: function(v) { this._meat = Math.max(0, Math.floor(v)); }
+});
+Object.defineProperty(Player.prototype, 'water', {
+  get: function() { return this._wat; },
+  set: function(v) { this._wat = Math.max(0, Math.floor(v)); }
+});
+Object.defineProperty(Player.prototype, 'criticalRate', {
+  get: function() { return this._critR; },
+  set: function(v) { this._critR = clamp(Math.floor(v), 0, 100); }
+});
+Object.defineProperty(Player.prototype, 'criticalDamage', {
+  get: function() { return this._critD; },
+  set: function(v) { this._critD = clamp(Math.floor(v), 100, 300); }
+});
+Object.defineProperty(Player.prototype, 'defendRate', {
+  get: function() { return this._defR; },
+  set: function(v) { this._defR = clamp(Math.floor(v), 0, 100); }
+});
+Object.defineProperty(Player.prototype, 'vegetarian_exp', {
+  get: function() { return this._vegExp; },
+  set: function(v) { this._vegExp = this.calcExp(Math.max(0, v), 0); }
+});
+Object.defineProperty(Player.prototype, 'meat_exp', {
+  get: function() { return this._meatExp; },
+  set: function(v) { this._meatExp = this.calcExp(Math.max(0, v), 1); }
+});
+Object.defineProperty(Player.prototype, 'water_exp', {
+  get: function() { return this._waterExp; },
+  set: function(v) { this._waterExp = this.calcExp(Math.max(0, v), 2); }
+});
+
+// ===== GAME CLASS =====
+var game = {
+  roundCount: 0,
+  log: [],
+  isOver: false,
+  player: null,
+  boss: null,
+  selectedCards: [],
+
+  startGame: function(cardDefs) {
+    this.selectedCards = cardDefs;
+    this.isOver = false;
+    this.roundCount = 0;
+    this.log = [];
+
+    this.player = new Player("玩家", false, 5000);
+    this.player.initCardStack(cardDefs);
+    this.player.resetStats();
+
+    this.boss = new Player("小小雪人", true, 8000);
+    this.boss.initCardStack(ALL_BOSS_CARDS);
+    this.boss.resetStats();
+
+    this.player.skillQueue = [];
+    this.boss.skillQueue = [];
+
+    this.addLog("⚔ 战斗开始 —— 万类霜天竞自由");
+    this._drawForBoth();
+    this._gatherForBoth();
+    this.bossUseCards();
+    this.roundCount++;
+
+    switchPanel("battle");
+  },
+
+  isExecuting: false,
+
+  nextRound: function() {
+    if (this.isOver) return;
+    if (this.isExecuting) { toast("技能正在释放中..."); return; }
+    var self = this;
+    this.isExecuting = true;
+
+    this.addLog("━━━ 回合 " + this.roundCount + " ━━━");
+
+    if (this._checkHP()) return;
+    this._buffTick();
+    renderAll();
+
+    this._execPair(function(gameOver) {
+      if (gameOver) { self.isExecuting = false; return; }
+
+      if (self._checkHP()) { self.isExecuting = false; return; }
+      self._drawForBoth();
+      self._gatherForBoth();
+      self.bossUseCards();
+
+      self.roundCount++;
+      self.isExecuting = false;
+      renderAll();
+    });
+  },
+
+  _execPair: function(done) {
+    var self = this;
+
+    // --- try player ---
+    var pOk = false;
+    if (!this.player.hasBuff("藏匿") && this.player.skillQueue.length > 0) {
+      pOk = this._tryOne(this.player, this.boss);
+    }
+    if (this.player.hp <= 0 || this.boss.hp <= 0) {
+      this._checkHP(); this.isExecuting = false; done(true); return;
+    }
+
+    // --- try boss ---
+    var bOk = false;
+    if (!this.boss.hasBuff("藏匿") && this.boss.skillQueue.length > 0) {
+      bOk = this._tryOne(this.boss, this.player);
+    }
+    if (this.player.hp <= 0 || this.boss.hp <= 0) {
+      this._checkHP(); this.isExecuting = false; done(true); return;
+    }
+
+    // --- both failed ---
+    if (!pOk && !bOk) {
+      for (var i = 0; i < this.player.skillQueue.length; i++) this.player.skillQueue[i].stayRound++;
+      for (var j = 0; j < this.boss.skillQueue.length; j++) this.boss.skillQueue[j].stayRound++;
+      done(false);
+      return;
+    }
+
+    setTimeout(function() { self._execPair(done); }, 300);
+  },
+
+  _tryOne: function(actor, enemy) {
+    var skill = actor.skillQueue[0];
+    if (skill.isPassive) { actor.skillQueue.shift(); return true; }
+    if (!actor.isResEnough(skill)) return false;
+
+    var eHpBefore = enemy.hp, pHpBefore = actor.hp;
+    var consumed = actor.consumeResourcesExact(skill);
+
+    var parts = [];
+    if (skill.vegCost > 0) parts.push(skill.vegCost + '点素食');
+    if (skill.meatCost > 0) parts.push(skill.meatCost + '点肉食');
+    if (skill.waterCost > 0) parts.push(skill.waterCost + '点水源');
+    if (parts.length > 0) this.addLog(actor.name + '使用' + skill.name + '，消耗了：' + parts.join(' '));
+    else this.addLog(actor.name + '使用了' + skill.name);
+
+    var ctx = { addLog: function(str) { game.addLog(str); } };
+    skill.exec(actor, enemy, ctx);
+    if (skill.logDesc) this.addLog(skill.logDesc);
+
+    var dmg = Math.max(0, eHpBefore - enemy.hp);
+    var heal = Math.max(0, actor.hp - pHpBefore);
+    actor.recordStats(skill, dmg, heal, consumed.vUsed, consumed.mUsed, consumed.wUsed);
+
+    var bf = document.getElementById("battlefield");
+    if (dmg > 0) showFloatingNumber(bf, enemy === this.boss ? "right" : "left", "-" + dmg, "damage");
+    if (heal > 0) showFloatingNumber(bf, actor === this.player ? "left" : "right", "+" + heal, "heal");
+
+    actor.skillQueue.shift();
+    renderAll();
+    return true;
+  },
+
+  bossUseCards: function() {
+    var boss = this.boss;
+    var p = this.player;
+
+    var priorities = [
+      {id: "WinterEntryCard", main: "寒冬入境", alt: "融化", condition: function(){return true;}},
+      {id: "IceBarrierCard", main: "寒冰塑体", alt: "融化", condition: function(){return boss.hp < boss.max_hp * 0.8;}},
+      {id: "ChillCard", main: "寒气逼人", alt: "融化", condition: function(){return true;}},
+      {id: "TrickletCard", main: "涓流", alt: "融化", condition: function(){return boss.water_level < 5;}},
+      {id: "ArcticCard", main: "极寒", alt: "融化", condition: function(){return p.hasDeBuff("寒气逼人") || boss.water >= 20;}},
+      {id: "KnockCard", main: "撞击", alt: "融化", condition: function(){return true;}},
+      {id: "FrostCard", main: "霜冻", alt: "融化", condition: function(){return p.vegetarian_exp > 0;}}
+    ];
+
+    while (boss.cardList.length > 0) {
+      var processed = false;
+      for (var pi = 0; pi < priorities.length; pi++) {
+        var pr = priorities[pi];
+        var found = false;
+        for (var hi = 0; hi < boss.cardList.length; hi++) {
+          var c = boss.cardList[hi];
+          if (c.id !== pr.id) continue;
+
+          var mainSkill = null, altSkill = null;
+          for (var si = 0; si < c.skills.length; si++) {
+            if (c.skills[si].name === pr.main) mainSkill = c.skills[si];
+            if (c.skills[si].name === pr.alt) altSkill = c.skills[si];
+          }
+
+          if (mainSkill && boss.canUseSkill(mainSkill) && pr.condition()) {
+            boss.useSkill(c, mainSkill);
+          } else if (altSkill) {
+            boss.useSkill(c, altSkill);
+          } else {
+            continue;
+          }
+          processed = true;
+          break;
+        }
+        if (processed) break;
+      }
+      if (!processed) break;
+    }
+
+    renderAll();
+  },
+
+  _checkHP: function() {
+    var victims = [this.player, this.boss];
+    for (var i = 0; i < victims.length; i++) {
+      if (victims[i].hp <= 0) {
+        this.addLog(victims[i].name + '体力不支，战斗结束！');
+        this.isOver = true;
+        showStatsModal();
+        renderAll();
+        return true;
+      }
+    }
+    return false;
+  },
+
+  _buffTick: function() {
+    var entities = [this.player, this.boss];
+    for (var ei = 0; ei < entities.length; ei++) {
+      var p = entities[ei];
+      for (var i = 0; i < p.buffs.length; i++) p.buffs[i].lastRound--;
+      p.buffs = p.buffs.filter(function(b) { return b.lastRound > 0 || b.isPermanent; });
+      for (var j = 0; j < p.debuffs.length; j++) p.debuffs[j].lastRound--;
+      p.debuffs = p.debuffs.filter(function(b) { return b.lastRound > 0 || b.isPermanent; });
+    }
+  },
+
+  _drawForBoth: function() {
+    var entities = [this.player, this.boss];
+    for (var ei = 0; ei < entities.length; ei++) {
+      var p = entities[ei];
+      var cards = 4;
+      for (var i = 0; i < p.buffs.length; i++) cards = p.buffs[i].drawCardBuffEffect(cards);
+      for (var j = 0; j < p.debuffs.length; j++) cards = p.debuffs[j].drawCardBuffEffect(cards);
+      cards = Math.max(1, cards);
+      for (var k = 0; k < cards; k++) p.drawCard();
+      if (!p.isBoss) this.addLog(p.name + '抽了' + cards + '张牌');
+      else this.addLog(p.name + '补充了' + cards + '张牌');
+    }
+  },
+
+  _gatherForBoth: function() {
+    this.player.getResources();
+    this.boss.getResources();
+    this.addLog(this.player.name + '收获了资源');
+    this.addLog(this.boss.name + '收获了资源');
+  },
+
+  queuedForPlayer: function(player) {
+    return player.skillQueue.length;
+  },
+
+  addLog: function(str) {
+    this.log.push(str);
+    var logEl = document.getElementById("battle-log");
+    if (!logEl) return;
+    var cls = "system";
+    if (str.indexOf("玩家") !== -1) cls = "player";
+    if (str.indexOf("小小雪人") !== -1) cls = "boss";
+    var div = document.createElement("div");
+    div.className = "log-entry " + cls;
+    div.textContent = str;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  },
+
+  saveGame: function() {
+    var data = {
+      roundCount: this.roundCount,
+      log: this.log.slice(),
+      p: this._collectPlayer(this.player),
+      b: this._collectPlayer(this.boss),
+      rm: {
+        p1: this.player.skillQueue.map(function(s) { return { n: s.name, sr: s.stayRound, sc: s.sourceCardName }; }),
+        p2: this.boss.skillQueue.map(function(s) { return { n: s.name, sr: s.stayRound, sc: s.sourceCardName }; })
+      }
+    };
+    localStorage.setItem("h5game_save", JSON.stringify(data));
+    toast("游戏已保存");
+  },
+
+  loadGame: function() {
+    var raw = localStorage.getItem("h5game_save");
+    if (!raw) { toast("没有找到存档"); return; }
+    var data = JSON.parse(raw);
+    this.roundCount = data.roundCount;
+    this.log = data.log.slice();
+    this.isOver = false;
+
+    this.player = this._restorePlayer(data.p, false);
+    this.boss = this._restorePlayer(data.b, true);
+
+    this.player.skillQueue = [];
+    for (var i = 0; i < data.rm.p1.length; i++) {
+      var s = data.rm.p1[i];
+      var skill = this._createSkill(s.n, s.sc);
+      if (skill) { skill.stayRound = s.sr; this.player.skillQueue.push(skill); }
+    }
+    this.boss.skillQueue = [];
+    for (var j = 0; j < data.rm.p2.length; j++) {
+      var s2 = data.rm.p2[j];
+      var skill2 = this._createSkill(s2.n, s2.sc);
+      if (skill2) { skill2.stayRound = s2.sr; this.boss.skillQueue.push(skill2); }
+    }
+
+    var logEl = document.getElementById("battle-log");
+    if (logEl) {
+      logEl.innerHTML = "";
+      for (var li = 0; li < this.log.length; li++) {
+        var l = this.log[li];
+        var cls = "system";
+        if (l.indexOf("玩家") !== -1) cls = "player";
+        if (l.indexOf("小小雪人") !== -1) cls = "boss";
+        var div = document.createElement("div");
+        div.className = "log-entry " + cls;
+        div.textContent = l;
+        logEl.appendChild(div);
+      }
+    }
+    renderAll();
+    switchPanel("battle");
+    toast("游戏已加载");
+  },
+
+  _collectPlayer: function(p) {
+    return {
+      hp: p.hp, mxhp: p.max_hp,
+      veg: p.vegetarian, vlv: p.vegetarian_level, vexp: p.vegetarian_exp,
+      meat: p.meat, mlv: p.meat_level, mexp: p.meat_exp,
+      wt: p.water, wlv: p.water_level, wexp: p.water_exp,
+      crt: p.criticalRate, crD: p.criticalDamage, def: p.defendRate,
+      moon: p.moonPhase,
+      types: p.cardTypeList.slice(),
+      stack: p.cardStack.map(function(c) { return c.id; }),
+      used: p.usedCardStack.map(function(c) { return c.id; }),
+      hand: p.cardList.map(function(c) { return c.id; }),
+      buffs: p.buffs.map(function(b) { return { name: b.name, isBuff: true, lr: b.lastRound, perm: b.isPermanent, ph: b.phase }; }),
+      debuffs: p.debuffs.map(function(b) { return { name: b.name, isBuff: false, lr: b.lastRound, perm: b.isPermanent }; })
+    };
+  },
+
+  _restorePlayer: function(d, isBoss) {
+    var p = new Player(isBoss ? "小小雪人" : "玩家", isBoss, d.mxhp);
+    p._hp = d.hp;
+    p.max_hp = d.mxhp;
+    p._veg = d.veg; p._vegExp = d.vexp;
+    p.vegetarian_level = d.vlv;
+    p._meat = d.meat; p._meatExp = d.mexp;
+    p.meat_level = d.mlv;
+    p._wat = d.wt; p._waterExp = d.wexp;
+    p.water_level = d.wlv;
+    p._critR = d.crt; p._critD = d.crD; p._defR = d.def;
+
+    var allDefs = isBoss ? ALL_BOSS_CARDS : game.selectedCards;
+    var defById = {};
+    for (var i = 0; i < allDefs.length; i++) defById[allDefs[i].id] = allDefs[i];
+
+    p.cardTypeList = d.types.slice();
+    p.cardStack = d.stack.map(function(id) { return defById[id] ? createCard(defById[id]) : null; }).filter(Boolean);
+    p.usedCardStack = d.used.map(function(id) { return defById[id] ? createCard(defById[id]) : null; }).filter(Boolean);
+    p.cardList = d.hand.map(function(id) { return defById[id] ? createCard(defById[id]) : null; }).filter(Boolean);
+
+    for (var bi = 0; bi < d.buffs.length; bi++) {
+      var bd = d.buffs[bi];
+      var buff;
+      if (bd.name === "月相") {
+        buff = makeMoonPhaseBuff();
+        buff.phase = bd.ph || 0;
+        buff.description = ["新月", "上弦月", "满月", "下弦月"][buff.phase];
+      } else {
+        buff = makeBuff(bd.name, true, bd.lr, bd.name);
+        if (bd.perm) buff.isPermanent = true;
+      }
+      p.buffs.push(buff);
+    }
+    for (var di = 0; di < d.debuffs.length; di++) {
+      var dd = d.debuffs[di];
+      var debuff = makeBuff(dd.name, false, dd.lr, dd.name);
+      if (dd.perm) debuff.isPermanent = true;
+      p.debuffs.push(debuff);
+    }
+    return p;
+  },
+
+  _createSkill: function(name, cardName) {
+    var fn = SKILL_DEFS[name];
+    if (!fn) return null;
+    var allDefs = ALL_PLAYER_CARDS.concat(ALL_BOSS_CARDS);
+    var def = null;
+    for (var i = 0; i < allDefs.length; i++) {
+      if (allDefs[i].name === cardName) { def = allDefs[i]; break; }
+    }
+    var skill = fn(def ? (def.slaughterNum || 1) : 1, def ? (def.liquifyNum || 1) : 1);
+    skill.sourceCardName = cardName;
+    return skill;
+  }
+};
+
+// ===== DECK BUILDER =====
+var MIN_DECK_SIZE = 8;
+
+function initDeckBuilder() {
+  var grid = document.getElementById("deck-card-grid");
+  var cntEl = document.getElementById("deck-count");
+  var btn = document.getElementById("btn-start-game");
+
+  var selectedNames = new Set();
+  try {
+    var saved = localStorage.getItem("h5game_deck");
+    if (saved) {
+      var arr = JSON.parse(saved);
+      for (var i = 0; i < arr.length; i++) selectedNames.add(arr[i]);
+    }
+  } catch(e) {}
+
+  function updateUI() {
+    cntEl.textContent = selectedNames.size;
+    btn.disabled = selectedNames.size < MIN_DECK_SIZE;
+    var children = grid.children;
+    for (var i = 0; i < children.length; i++) {
+      var item = children[i];
+      var name = item.dataset.cardName;
+      if (selectedNames.has(name)) item.classList.add("selected");
+      else item.classList.remove("selected");
+      var cb = item.querySelector(".deck-card-checkbox");
+      if (cb) cb.checked = selectedNames.has(name);
+    }
+  }
+
+  grid.innerHTML = "";
+  for (var di = 0; di < ALL_PLAYER_CARDS.length; di++) {
+    var def = ALL_PLAYER_CARDS[di];
+
+    var div = document.createElement("div");
+    div.className = "deck-card-item";
+    div.dataset.cardName = def.name;
+
+    var nameRow = document.createElement("div");
+    nameRow.className = "deck-card-name-row";
+
+    // Archetype badge
+    var archetypeName = def.archetype || "通用";
+    var archBadge = document.createElement("span");
+    archBadge.className = "deck-card-archetype-badge " + (archetypeName === "猛兽" ? "mengshou" : archetypeName === "春晖" ? "chunhui" : archetypeName === "乞巧" ? "qiqiao" : "tongyong");
+    archBadge.textContent = archetypeName;
+    nameRow.appendChild(archBadge);
+
+    var nameEl = document.createElement("div");
+    nameEl.className = "deck-card-name";
+    nameEl.textContent = def.name;
+    nameRow.appendChild(nameEl);
+
+    var typeText = document.createElement("span");
+    typeText.className = "deck-card-type-text " + def.type.toLowerCase();
+    typeText.textContent = def.type === "LAND" ? "陆" : def.type === "SKY" ? "空" : "海";
+    nameRow.appendChild(typeText);
+    div.appendChild(nameRow);
+
+    var skillsDiv = document.createElement("div");
+    skillsDiv.className = "deck-card-skills";
+    for (var sk = 0; sk < def.skills.length; sk++) {
+      var skillName = def.skills[sk];
+      var sd = SKILL_DEFS[skillName] && SKILL_DEFS[skillName](def.slaughterNum||1, def.liquifyNum||1);
+      var costStr = "";
+      if (sd.vegCost) costStr += "🌿" + sd.vegCost;
+      if (sd.meatCost) costStr += "🥩" + sd.meatCost;
+      if (sd.waterCost) costStr += "💧" + sd.waterCost;
+      if (!sd.vegCost && !sd.meatCost && !sd.waterCost) costStr = "免费";
+
+      var row = document.createElement("div");
+      row.style.marginBottom = "3px";
+      row.innerHTML = '<span style="font-weight:600;color:#e0d7c6">' + skillName + '</span> <span class="deck-skill-cost">' + costStr + '</span>' +
+        '<div class="deck-skill-detail">' + (sd.desc || '') + '</div>';
+      skillsDiv.appendChild(row);
+    }
+    // Add slaughter row
+    var slaughterRow = document.createElement("div");
+    slaughterRow.style.marginTop = "2px";
+    slaughterRow.innerHTML = '<span style="font-weight:600;color:#e8b86d">屠宰</span> <span class="deck-skill-cost">🥩' + def.slaughterNum + '</span>' +
+      '<div class="deck-skill-detail">废弃此牌，获得' + def.slaughterNum + '点肉食</div>';
+    skillsDiv.appendChild(slaughterRow);
+
+    div.appendChild(skillsDiv);
+
+    var cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.className = "deck-card-checkbox";
+
+    div.appendChild(cb);
+
+    (function(defName) {
+      div.addEventListener("click", function(e) {
+        if (e.target.tagName === "INPUT") return;
+        if (selectedNames.has(defName)) selectedNames.delete(defName);
+        else selectedNames.add(defName);
+        var names = []; selectedNames.forEach(function(v) { names.push(v); });
+        localStorage.setItem("h5game_deck", JSON.stringify(names));
+        updateUI();
+      });
+
+      cb.addEventListener("change", function() {
+        if (cb.checked) selectedNames.add(defName);
+        else selectedNames.delete(defName);
+        var names = []; selectedNames.forEach(function(v) { names.push(v); });
+        localStorage.setItem("h5game_deck", JSON.stringify(names));
+        updateUI();
+      });
+    })(def.name);
+
+    grid.appendChild(div);
+  }
+
+  updateUI();
+
+  btn.addEventListener("click", function() {
+    if (selectedNames.size < MIN_DECK_SIZE) {
+      toast("请至少选择8张卡牌");
+      return;
+    }
+    var cardDefs = ALL_PLAYER_CARDS.filter(function(d) { return selectedNames.has(d.name); });
+    game.startGame(cardDefs);
+  });
+}
+
+// ===== UI RENDERER =====
+function getBuffIcon(buff) {
+  if (buff.name === "月相") return ["🌑","🌓","🌕","🌗"][buff.phase || 0];
+  if (buff.name.indexOf("捣药-攻") !== -1) return "⚔️";
+  if (buff.name.indexOf("捣药-防") !== -1) return "🛡️";
+  if (buff.name.indexOf("捣药-牌") !== -1) return "🀄";
+  if (buff.name.indexOf("繁盛") !== -1) return "💚";
+  if (buff.name.indexOf("横行") !== -1) return "🦞";
+  if (buff.name.indexOf("自在") !== -1) return "😌";
+  if (buff.name.indexOf("锐利") !== -1) return "👁️";
+  if (buff.name.indexOf("洞若观火") !== -1) return "🔎";
+  if (buff.name.indexOf("藏匿") !== -1) return "🙈";
+  if (buff.name.indexOf("鹰击长空") !== -1 && buff.isBuff) return "🦅";
+  if (buff.name.indexOf("鹰击长空") !== -1 && !buff.isBuff) return "🪶";
+  if (buff.name.indexOf("寒冰塑体") !== -1) return "🧊";
+  if (buff.name.indexOf("燕归巢") !== -1) return "🐦";
+  if (buff.name.indexOf("寒气逼人") !== -1) return "❄️";
+  if (buff.name.indexOf("啃咬") !== -1) return "🦷";
+  if (buff.name.indexOf("优雅") !== -1) return "💅";
+  if (buff.name.indexOf("蛮力") !== -1) return "💪";
+  if (buff.name.indexOf("技能消耗") !== -1) return "😫";
+  return buff.isBuff ? "⬆️" : "⬇️";
+}
+
+function renderAll() {
+  renderBattlePanel();
+}
+
+function renderBattlePanel() {
+  var panel = document.getElementById("panel-battle");
+  if (!panel || !panel.classList.contains("active")) return;
+  if (!game.player) return;
+  renderPlayerStats(document.getElementById("panel-player"), game.player, false);
+  renderPlayerStats(document.getElementById("panel-boss"), game.boss, true);
+  renderHandCards();
+}
+
+function renderPlayerStats(container, player, isBoss) {
+  if (!player || !container) return;
+  var hpPct = player.max_hp > 0 ? Math.floor(player.hp / player.max_hp * 100) : 0;
+  var buffsHtml = "";
+  for (var i = 0; i < player.buffs.length; i++) {
+    var b = player.buffs[i];
+    buffsHtml += '<div class="buff-icon">' + getBuffIcon(b) + '<span class="tooltip">' + b.name + ' - ' + b.description + (b.isPermanent ? '' : ' (' + b.lastRound + '回合)') + '</span></div>';
+  }
+  var debuffsHtml = "";
+  for (var j = 0; j < player.debuffs.length; j++) {
+    var db = player.debuffs[j];
+    debuffsHtml += '<div class="debuff-icon">' + getBuffIcon(db) + '<span class="tooltip">' + db.name + ' - ' + db.description + (db.isPermanent ? '' : ' (' + db.lastRound + '回合)') + '</span></div>';
+  }
+  var hasMoon = false;
+  for (var i = 0; i < player.buffs.length; i++) {
+    if (player.buffs[i].name === "月相") { hasMoon = true; break; }
+  }
+  var moonRow = hasMoon ? '<div class="resource-row"><span class="label">月相</span><span class="value" style="color:#f0d090">' + player.moonPhaseName() + ' ' + (["🌑","🌓","🌕","🌗"][player.moonPhase] || "🌑") + '</span></div>' : '';
+
+  var queueHtml = '';
+  for (var k = 0; k < player.skillQueue.length; k++) {
+    var s = player.skillQueue[k];
+    var costShort = (s.vegCost?'🌿'+s.vegCost:'') + (s.meatCost?'🥩'+s.meatCost:'') + (s.waterCost?'💧'+s.waterCost:'');
+    var descFull = s.desc || '';
+    queueHtml += '<span class="skill-pill ' + (isBoss ? 'boss' : 'player') + '"><b>' + s.name + '</b>' + (costShort?' <span class="pill-cost">'+costShort+'</span>':'') + '<br>' + (descFull?'<span class="pill-desc">'+descFull+'</span>':'') + '</span>';
+  }
+
+  var vegExpPct = LEVEL_EXP[player.vegetarian_level] ? Math.floor(player.vegetarian_exp / LEVEL_EXP[player.vegetarian_level] * 100) : 0;
+  var meatExpPct = LEVEL_EXP[player.meat_level] ? Math.floor(player.meat_exp / LEVEL_EXP[player.meat_level] * 100) : 0;
+  var waterExpPct = LEVEL_EXP[player.water_level] ? Math.floor(player.water_exp / LEVEL_EXP[player.water_level] * 100) : 0;
+  var critPct = player.criticalRate;
+  var critDmgPct = Math.floor((player.criticalDamage - 100) / 200 * 100);
+  var defPct = player.defendRate;
+  var vegTh = LEVEL_EXP[player.vegetarian_level] || 99;
+  var meatTh = LEVEL_EXP[player.meat_level] || 99;
+  var waterTh = LEVEL_EXP[player.water_level] || 99;
+
+  var allBuffsHtml = buffsHtml + debuffsHtml;
+
+  container.innerHTML =
+    '<div class="entity-header">' +
+      '<span class="entity-name ' + (isBoss ? 'boss-name' : 'player-name') + '">' + player.name + '</span>' +
+      (allBuffsHtml ? '<div class="entity-buffs">' + allBuffsHtml + '</div>' : '') +
+    '</div>' +
+    '<div class="hp-container">' +
+      '<span class="hp-label">生命值 HP</span>' +
+      '<div class="hp-bar-outer"><div class="hp-bar-inner" style="width:' + hpPct + '%"></div></div>' +
+      '<span class="hp-text">' + player.hp + ' / ' + player.max_hp + '</span>' +
+    '</div>' +
+    '<div class="resource-stats">' +
+      '<div class="resource-row"><span class="label">🌿素食 Lv.' + player.vegetarian_level + '</span><span class="value-amount">' + player.vegetarian + '</span></div>' +
+      '<div class="mini-bar exp-bar"><div class="mini-bar-fill" style="width:' + vegExpPct + '%"></div><span class="mini-bar-text">Exp ' + player.vegetarian_exp + '/' + vegTh + '</span></div>' +
+      '<div class="resource-row"><span class="label">🥩肉食 Lv.' + player.meat_level + '</span><span class="value-amount">' + player.meat + '</span></div>' +
+      '<div class="mini-bar exp-bar"><div class="mini-bar-fill" style="width:' + meatExpPct + '%"></div><span class="mini-bar-text">Exp ' + player.meat_exp + '/' + meatTh + '</span></div>' +
+      '<div class="resource-row"><span class="label">💧水源 Lv.' + player.water_level + '</span><span class="value-amount">' + player.water + '</span></div>' +
+      '<div class="mini-bar exp-bar"><div class="mini-bar-fill" style="width:' + waterExpPct + '%"></div><span class="mini-bar-text">Exp ' + player.water_exp + '/' + waterTh + '</span></div>' +
+      '<div class="resource-row"><span class="label">暴击率</span><span class="value crit">' + player.criticalRate + '%</span></div>' +
+      '<div class="mini-bar crit-bar"><div class="mini-bar-fill" style="width:' + critPct + '%"></div><span class="mini-bar-text">' + player.criticalRate + '/100</span></div>' +
+      '<div class="resource-row"><span class="label">暴击伤害</span><span class="value crit">' + player.criticalDamage + '%</span></div>' +
+      '<div class="mini-bar critdmg-bar"><div class="mini-bar-fill" style="width:' + critDmgPct + '%"></div><span class="mini-bar-text">' + player.criticalDamage + '/300</span></div>' +
+      '<div class="resource-row"><span class="label">防御率</span><span class="value defend">' + player.defendRate + '%</span></div>' +
+      '<div class="mini-bar defend-bar"><div class="mini-bar-fill" style="width:' + defPct + '%"></div><span class="mini-bar-text">' + player.defendRate + '/100</span></div>' +
+      moonRow +
+    '</div>' +
+    '<div class="queue-in-panel">' +
+      '<span class="queue-label">&#9654; 技能队列</span>' +
+      '<div class="queue-row">' + (queueHtml || '<span style="font-size:12px;color:#888">等待出牌...</span>') + '</div>' +
+    '</div>';
+}
+
+function renderHandCards() {
+  var container = document.getElementById("hand-cards");
+  if (!container || !game.player) return;
+  container.innerHTML = "";
+  for (var ci = 0; ci < game.player.cardList.length; ci++) {
+    var card = game.player.cardList[ci];
+    var div = document.createElement("div");
+    div.className = "card";
+    div.dataset.cardId = card.id;
+    div.dataset.cardName = card.name;
+    div.draggable = false;
+
+    var typeBadge = document.createElement("div");
+    typeBadge.className = "card-type-badge " + card.type.toLowerCase();
+    typeBadge.textContent = card.type === "LAND" ? "陆" : card.type === "SKY" ? "空" : "海";
+    div.appendChild(typeBadge);
+
+    var nameEl = document.createElement("span");
+    nameEl.className = "card-name";
+    nameEl.textContent = card.name;
+    div.appendChild(nameEl);
+
+    (function(c, el) {
+      div.addEventListener("mousedown", function(e) { onCardDragStart(e, c, el); });
+      div.addEventListener("touchstart", function(e) { onCardDragStart(e, c, el); }, { passive: false });
+    })(card, div);
+
+    container.appendChild(div);
+  }
+
+  var ghost = document.getElementById("drag-ghost");
+  if (ghost) ghost.style.display = "none";
+}
+
+function showStatsModal() {
+  var tbody = document.getElementById("stats-table");
+  tbody.innerHTML = '<thead><tr><th>卡牌</th><th>使用次数</th><th>总伤害</th><th>总治疗</th><th>素食消耗</th><th>肉食消耗</th><th>水源消耗</th></tr></thead><tbody></tbody>';
+  var tb = tbody.querySelector("tbody");
+  var stats = Object.values(game.player.cardStatsMap);
+  if (stats.length === 0) {
+    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888">暂无数据</td></tr>';
+  } else {
+    stats.sort(function(a, b) { return b.totalDamage - a.totalDamage; });
+    for (var i = 0; i < stats.length; i++) {
+      var s = stats[i];
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td>' + s.name + '</td><td>' + s.timesUsed + '</td><td>' + s.totalDamage + '</td><td>' + s.totalHeal + '</td><td>' + s.totalVeg + '</td><td>' + s.totalMeat + '</td><td>' + s.totalWater + '</td>';
+      tb.appendChild(tr);
+    }
+  }
+  switchPanel("stats");
+}
+
+// ===== DRAG INTERACTION =====
+var dragState = null;
+
+function onCardDragStart(e, card, cardEl) {
+  e.preventDefault();
+  var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  var skills = [];
+  for (var i = 0; i < card.skills.length; i++) {
+    if (!card.skills[i].isPassive) skills.push(card.skills[i]);
+  }
+
+  if (skills.length === 0) {
+    toast("该卡牌没有可用技能");
+    return;
+  }
+
+  dragState = {
+    card: card,
+    cardEl: cardEl,
+    startX: clientX,
+    startY: clientY,
+    curX: clientX,
+    curY: clientY,
+    active: true,
+    selectedSkillIdx: -1,
+    skills: skills
+  };
+
+  cardEl.classList.add("dragging");
+
+  var overlay = document.getElementById("drag-overlay");
+  overlay.classList.add("active");
+  overlay.style.pointerEvents = "auto";
+
+  renderSkillFan(clientX, clientY, skills);
+  document.addEventListener("mousemove", onDragMove);
+  document.addEventListener("mouseup", onDragEnd);
+  document.addEventListener("touchmove", onDragMove, { passive: false });
+  document.addEventListener("touchend", onDragEnd);
+}
+
+function onDragMove(e) {
+  if (!dragState || !dragState.active) return;
+  e.preventDefault();
+  var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  dragState.curX = clientX;
+  dragState.curY = clientY;
+
+  var fanEls = document.getElementById("skill-fan").children;
+  var nearestIdx = -1;
+  for (var i = 0; i < fanEls.length; i++) {
+    var rect = fanEls[i].getBoundingClientRect();
+    if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+      nearestIdx = i;
+      break;
+    }
+  }
+  if (dragState.selectedSkillIdx !== nearestIdx) {
+    if (dragState.selectedSkillIdx >= 0 && fanEls[dragState.selectedSkillIdx]) {
+      fanEls[dragState.selectedSkillIdx].style.borderColor = "#4a4a6e";
+      fanEls[dragState.selectedSkillIdx].style.transform = "translate(-50%,-50%)";
+      fanEls[dragState.selectedSkillIdx].style.background = "var(--skill-pill-bg, #2a2a3e)";
+      fanEls[dragState.selectedSkillIdx].style.boxShadow = "0 4px 16px rgba(0,0,0,0.4)";
+      fanEls[dragState.selectedSkillIdx].style.zIndex = "10";
+    }
+    dragState.selectedSkillIdx = nearestIdx;
+    if (nearestIdx >= 0 && fanEls[nearestIdx]) {
+      fanEls[nearestIdx].style.borderColor = "#ffd700";
+      fanEls[nearestIdx].style.transform = "translate(-50%,-50%) scale(1.1)";
+      fanEls[nearestIdx].style.background = "rgba(232,184,109,0.25)";
+      fanEls[nearestIdx].style.boxShadow = "0 0 24px rgba(232,184,109,0.5), 0 4px 16px rgba(0,0,0,0.4)";
+      fanEls[nearestIdx].style.zIndex = "20";
+    }
+
+    var rbar = document.getElementById("drag-resource-bar");
+    if (nearestIdx >= 0 && dragState.skills[nearestIdx]) {
+      var s = dragState.skills[nearestIdx];
+      var p = game.player;
+      var costUp = p.hasDeBuff("技能消耗+1");
+      var pendingVeg = 0, pendingMeat = 0, pendingWater = 0;
+      for (var qi = 0; qi < p.skillQueue.length; qi++) {
+        pendingVeg += p.skillQueue[qi].vegCost;
+        pendingMeat += p.skillQueue[qi].meatCost;
+        pendingWater += p.skillQueue[qi].waterCost;
+      }
+      var totalVeg = s.vegCost + (costUp && s.vegCost > 0 ? 1 : 0) + pendingVeg;
+      var totalMeat = s.meatCost + (costUp && s.meatCost > 0 ? 1 : 0) + pendingMeat;
+      var totalWater = s.waterCost + (costUp && s.waterCost > 0 ? 1 : 0) + pendingWater;
+      var vegOk = p.vegetarian >= totalVeg;
+      var meatOk = p.meat >= totalMeat;
+      var waterOk = p.water >= totalWater;
+      var vegTxt = '🌿' + p.vegetarian + '/' + s.vegCost + (pendingVeg ? '+' + pendingVeg : '');
+      var meatTxt = '🥩' + p.meat + '/' + s.meatCost + (pendingMeat ? '+' + pendingMeat : '');
+      var waterTxt = '💧' + p.water + '/' + s.waterCost + (pendingWater ? '+' + pendingWater : '');
+      rbar.innerHTML = '<span class="' + (vegOk ? 'res-enough' : 'res-short') + '">' + vegTxt + '</span>' +
+        '<span class="' + (meatOk ? 'res-enough' : 'res-short') + '">' + meatTxt + '</span>' +
+        '<span class="' + (waterOk ? 'res-enough' : 'res-short') + '">' + waterTxt + '</span>';
+      rbar.classList.add("show");
+    } else {
+      rbar.classList.remove("show");
+    }
+  }
+}
+
+function onDragEnd(e) {
+  if (!dragState) return;
+  document.removeEventListener("mousemove", onDragMove);
+  document.removeEventListener("mouseup", onDragEnd);
+  document.removeEventListener("touchmove", onDragMove);
+  document.removeEventListener("touchend", onDragEnd);
+
+  var overlay = document.getElementById("drag-overlay");
+  overlay.classList.remove("active");
+  overlay.style.pointerEvents = "none";
+
+  if (dragState.cardEl) dragState.cardEl.classList.remove("dragging");
+
+  if (dragState.selectedSkillIdx >= 0 && dragState.selectedSkillIdx < dragState.skills.length) {
+    var skill = dragState.skills[dragState.selectedSkillIdx];
+    game.player.useSkill(dragState.card, skill);
+    flashCard(dragState.cardEl);
+  }
+
+  document.getElementById("skill-fan").innerHTML = "";
+  document.getElementById("drag-resource-bar").classList.remove("show");
+  dragState = null;
+  renderAll();
+
+  if (game.player && game.player.cardList.length === 0 && !game.isOver) {
+    setTimeout(function() { game.nextRound(); renderAll(); }, 400);
+  }
+}
+
+function renderSkillFan(cx, cy, skills) {
+  var fan = document.getElementById("skill-fan");
+  fan.innerHTML = "";
+  var cx_fixed = window.innerWidth / 2;
+  var cy_fixed = window.innerHeight / 2;
+  var itemW = 360, itemH = 130, gap = 24;
+  var totalW = skills.length * itemW + (skills.length - 1) * gap;
+  var startX = cx_fixed - totalW / 2;
+  for (var i = 0; i < skills.length; i++) {
+    var sx = startX + i * (itemW + gap) + itemW / 2;
+    var sy = cy_fixed;
+
+    var item = document.createElement("div");
+    item.className = "skill-fan-item visible";
+    item.style.position = "absolute";
+    item.style.left = sx + "px";
+    item.style.top = sy + "px";
+    item.style.width = itemW + "px";
+    item.style.minHeight = itemH + "px";
+    item.style.borderRadius = "14px";
+    item.style.background = "var(--skill-pill-bg, #2a2a3e)";
+    item.style.border = "3px solid #4a4a6e";
+    item.style.display = "flex";
+    item.style.flexDirection = "column";
+    item.style.alignItems = "flex-start";
+    item.style.justifyContent = "center";
+    item.style.fontSize = "14px";
+    item.style.fontWeight = "700";
+    item.style.color = "#e0d7c6";
+    item.style.textAlign = "left";
+    item.style.transform = "translate(-50%,-50%)";
+    item.style.transition = "transform 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s";
+    item.style.pointerEvents = "none";
+    item.style.zIndex = "10";
+    item.style.lineHeight = "1.35";
+    item.style.padding = "10px 14px";
+    item.style.overflow = "hidden";
+    item.style.boxShadow = "0 4px 16px rgba(0,0,0,0.4)";
+
+    var s = skills[i];
+    var costStr = "";
+    if (s.vegCost) costStr += "🌿" + s.vegCost + " ";
+    if (s.meatCost) costStr += "🥩" + s.meatCost + " ";
+    if (s.waterCost) costStr += "💧" + s.waterCost;
+    if (!s.vegCost && !s.meatCost && !s.waterCost) costStr = "免费";
+    item.innerHTML = '<span style="font-size:22px;font-weight:700;color:#e8b86d">' + s.name + '</span>' +
+      '<span style="font-size:16px;color:#a09888">' + costStr + '</span>' +
+      '<span style="font-size:15px;color:#c0b8a8;margin-top:4px">' + (s.desc || '') + '</span>';
+    fan.appendChild(item);
+  }
+}
+
+function flashCard(cardEl) {
+  if (!cardEl) return;
+  cardEl.style.transition = "transform 0.2s";
+  cardEl.style.transform = "translateY(-20px)";
+  setTimeout(function() { cardEl.style.transform = ""; }, 200);
+}
+
+function showFloatingNumber(container, side, text, type) {
+  var el = document.createElement("div");
+  el.className = "floating-number " + type;
+  el.textContent = text;
+  el.style.position = "absolute";
+  el.style.top = (40 + Math.random() * 10) + "%";
+  el.style.left = side === "left" ? "25%" : "75%";
+  container.appendChild(el);
+  var cleanup = function() { if (el.parentNode) el.parentNode.removeChild(el); };
+  setTimeout(cleanup, 1500);
+}
+
+// ===== APP CONTROLLER =====
+function switchPanel(name) {
+  var panels = document.querySelectorAll(".panel");
+  for (var i = 0; i < panels.length; i++) panels[i].classList.remove("active");
+  var panel = document.getElementById("panel-" + name);
+  if (panel) panel.classList.add("active");
+
+  var navItems = document.querySelectorAll(".nav-item");
+  for (var j = 0; j < navItems.length; j++) navItems[j].classList.remove("active");
+  var navItem = document.querySelector('.nav-item[data-panel="' + name + '"]');
+  if (navItem) navItem.classList.add("active");
+
+  closeSidebar();
+  renderAll();
+}
+
+function closeSidebar() {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("hamburger").classList.remove("active");
+}
+
+function toast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._toastTimer);
+  t._toastTimer = setTimeout(function() { t.classList.remove("show"); }, 2000);
+}
+
+function confirm(title, msg, onConfirm) {
+  var modal = document.getElementById("modal-confirm");
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-message").textContent = msg;
+  modal.classList.add("active");
+  var btn = document.getElementById("modal-confirm-btn");
+  var cancel = document.getElementById("modal-cancel");
+  var close = function() {
+    modal.classList.remove("active");
+    btn.onclick = null;
+    cancel.onclick = null;
+  };
+  btn.onclick = function() { close(); onConfirm(); };
+  cancel.onclick = close;
+}
+
+function runTests() {
+  var passed = 0, failed = 0, errors = [];
+  function check(cond, msg) {
+    if (cond) passed++; else { failed++; errors.push(msg); }
+  }
+
+  check(ALL_PLAYER_CARDS.length === 19, "ALL_PLAYER_CARDS length is " + ALL_PLAYER_CARDS.length + ", expected 19");
+  check(ALL_BOSS_CARDS.length === 7, "ALL_BOSS_CARDS length is " + ALL_BOSS_CARDS.length + ", expected 7");
+
+  var skillNames = Object.keys(SKILL_DEFS);
+  check(skillNames.length >= 55, "SKILL_DEFS has " + skillNames.length + " skills, expected 55+");
+  check(typeof SKILL_DEFS["屠宰"] === "function", "SKILL_DEFS has 屠宰");
+  check(typeof SKILL_DEFS["融化"] === "function", "SKILL_DEFS has 融化");
+  check(typeof SKILL_DEFS["虎啸"] === "function", "SKILL_DEFS has 虎啸");
+  check(typeof SKILL_DEFS["波涛之怒"] === "function", "SKILL_DEFS has 波涛之怒");
+  check(typeof SKILL_DEFS["寒冬入境"] === "function", "SKILL_DEFS has 寒冬入境");
+
+  var tigerCard = createCard(ALL_PLAYER_CARDS[0]);
+  check(tigerCard.name === "老虎", "createCard returns correct name for 老虎");
+  check(tigerCard.skills.length === 4, "老虎 has 4 skills (3 custom + 1 屠宰), got " + tigerCard.skills.length);
+  check(tigerCard.skills[tigerCard.skills.length - 1].name === "屠宰", "老虎's last skill is 屠宰");
+
+  var frostCard = createCard(ALL_BOSS_CARDS[6]);
+  check(frostCard.name === "霜冻", "createCard returns correct name for 霜冻");
+  check(frostCard.skills.length === 2, "Boss card has 2 skills (1 custom + 1 融化), got " + frostCard.skills.length);
+  check(frostCard.skills[frostCard.skills.length - 1].name === "融化", "Boss card last skill is 融化");
+
+  var p = new Player("测试", false, 5000);
+  check(p.name === "测试", "Player name is correct");
+  check(p.hp === 5000, "Player HP is 5000");
+  check(p.max_hp === 5000, "Player max_hp is 5000");
+  check(p.vegetarian === 1 && p.meat === 1 && p.water === 1, "Player starts with 1 of each resource");
+  check(p.vegetarian_level === 1 && p.meat_level === 1 && p.water_level === 1, "Player resource levels start at 1");
+  check(p.criticalRate === 0 && p.criticalDamage === 150 && p.defendRate === 5, "Player combat stats are correct");
+
+  p.criticalRate = 50;
+  check(p.criticalRate === 50, "Player criticalRate setter works");
+  p.criticalRate = 200;
+  check(p.criticalRate === 100, "Player criticalRate clamps to 100");
+  p.criticalDamage = 350;
+  check(p.criticalDamage === 300, "Player criticalDamage clamps to 300");
+  p.defendRate = -5;
+  check(p.defendRate === 0, "Player defendRate clamps to 0");
+
+  p.hp = -10;
+  check(p.hp === 0, "Player HP clamps to 0");
+
+  check(typeof p.isResEnough === "function", "Player has isResEnough method");
+  check(typeof p.calcDamage === "function", "Player has calcDamage method");
+  check(typeof p.calcCure === "function", "Player has calcCure method");
+  check(typeof p.judgeDebuff === "function", "Player has judgeDebuff method");
+  check(typeof p.addBuff === "function", "Player has addBuff method");
+
+  var pigCard = createCard(ALL_PLAYER_CARDS[3]);
+  check(pigCard.slaughterNum === 2, "猪 slaughterNum is 2");
+  var slaughterPig = pigCard.skills.find(function(s) { return s.name === "屠宰"; });
+  check(slaughterPig && slaughterPig.slaughterNum === 2, "猪's 屠宰 gives 2 meat");
+
+  var mpBuff = makeMoonPhaseBuff();
+  check(mpBuff.name === "月相", "MoonPhaseBuff name is correct");
+  check(mpBuff.isPermanent === true, "MoonPhaseBuff is permanent");
+  check(mpBuff.phase === 0, "MoonPhaseBuff starts at phase 0");
+  mpBuff.advancePhase(1);
+  check(mpBuff.phase === 1, "MoonPhaseBuff advances correctly");
+  mpBuff.advancePhase(3);
+  check(mpBuff.phase === 0, "MoonPhaseBuff wraps around correctly");
+
+  // Save/load test
+  localStorage.setItem("h5game_test", JSON.stringify({ foo: "bar" }));
+  var loaded = JSON.parse(localStorage.getItem("h5game_test"));
+  check(loaded && loaded.foo === "bar", "localStorage save/load works");
+  localStorage.removeItem("h5game_test");
+  check(!localStorage.getItem("h5game_test"), "localStorage remove works");
+
+  // DOM checks
+  check(document.getElementById("btn-start-game") !== null, "Start button exists in DOM");
+  check(document.getElementById("panel-battle") !== null, "Battle panel exists in DOM");
+  check(document.getElementById("panel-deck") !== null, "Deck panel exists in DOM");
+  check(document.getElementById("battle-log") !== null, "Battle log exists in DOM");
+  check(document.getElementById("hand-cards") !== null, "Hand cards container exists in DOM");
+
+  console.log("=== TEST RESULTS ===");
+  console.log("Passed: " + passed + "/" + (passed + failed));
+  if (errors.length > 0) {
+    console.error("Failures:");
+    for (var i = 0; i < errors.length; i++) console.error("  - " + errors[i]);
+  } else {
+    console.log("All tests passed!");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("hamburger").addEventListener("click", function() {
+    var sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("open");
+    document.getElementById("hamburger").classList.toggle("active");
+  });
+
+  document.querySelectorAll(".nav-item").forEach(function(item) {
+    item.addEventListener("click", function() { switchPanel(item.dataset.panel); });
+  });
+
+  var deckClose = document.getElementById("deck-close");
+  if (deckClose) deckClose.addEventListener("click", function() { switchPanel("battle"); });
+
+  var statsClose = document.getElementById("stats-close");
+  if (statsClose) statsClose.addEventListener("click", function() { switchPanel("battle"); });
+
+  document.getElementById("btn-save").addEventListener("click", function() {
+    if (!game.player) { toast("没有游戏数据可保存"); return; }
+    game.saveGame();
+  });
+
+  document.getElementById("btn-load").addEventListener("click", function() {
+    if (!localStorage.getItem("h5game_save")) { toast("没有找到存档"); return; }
+    confirm("加载存档", "确定要加载存档吗？当前进度将丢失。", function() { game.loadGame(); });
+  });
+
+  document.getElementById("btn-reset").addEventListener("click", function() {
+    confirm("重置游戏", "确定要重置所有数据吗？此操作不可撤销。", function() {
+      localStorage.removeItem("h5game_save");
+      localStorage.removeItem("h5game_deck");
+      location.reload();
+    });
+  });
+
+  document.querySelector(".main-content").addEventListener("click", function(e) {
+    var sb = document.getElementById("sidebar");
+    if (sb.classList.contains("open") && !e.target.closest(".hamburger")) {
+      closeSidebar();
+    }
+  });
+
+  initDeckBuilder();
+
+  switchPanel("deck");
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      if (dragState) onDragEnd(e);
+      closeSidebar();
+    }
+  });
+
+  // ===== TEST HARNESS =====
+  runTests();
+});
+</script>
 </body>
 </html>
