@@ -155,6 +155,15 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 .deck-subtitle { font-size:15px; color:var(--text-muted); margin-top:4px; }
 .deck-close { background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; }
 .deck-close:hover { color:var(--text); }
+.deck-body { display:flex; gap:12px; flex:1; min-height:0; overflow:hidden; }
+.deck-presets { width:140px; min-width:140px; display:flex; flex-direction:column; gap:8px; padding:4px 0; border-right:1px solid var(--card-border); }
+.preset-title { font-size:14px; font-weight:600; color:var(--text-muted); margin-bottom:4px; }
+.preset-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:14px 8px; border-radius:10px; background:rgba(255,255,255,0.04); border:2px solid var(--card-border); color:var(--text); cursor:pointer; font-family:var(--font-stack); transition:0.2s; }
+.preset-btn:hover { border-color:var(--accent-gold); background:rgba(232,184,109,0.08); }
+.preset-btn:active { background:rgba(232,184,109,0.15); }
+.preset-name { font-size:14px; font-weight:600; }
+.preset-count { font-size:11px; color:var(--text-muted); font-weight:400; }
+.preset-desc { font-size:10px; color:var(--text-muted); text-align:center; line-height:1.3; }
 .deck-card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:10px; flex:1; overflow-y:auto; align-content:start; }
 .deck-card-item { background:var(--card-bg); border:2px solid var(--card-border); border-radius:8px; padding:14px; cursor:pointer; display:flex; flex-direction:column; gap:6px; transition:0.2s; position:relative; align-items:flex-start; }
 .deck-card-item:hover { border-color:var(--accent-gold); }
@@ -272,7 +281,10 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
     </section>
     <section class="panel" id="panel-deck">
       <div class="deck-header"><div><div class="deck-title">&#x1F0CF; 卡组构筑</div><div class="deck-subtitle">勾选至少 8 张卡牌以开始对战</div></div><button class="deck-close" id="deck-close">&#x2715;</button></div>
-      <div class="deck-card-grid" id="deck-card-grid"></div>
+      <div class="deck-body">
+        <div class="deck-presets" id="deck-presets"></div>
+        <div class="deck-card-grid" id="deck-card-grid"></div>
+      </div>
       <div class="deck-footer"><div class="deck-selected-count">已选择 <span id="deck-count">0</span> / 19 张</div><button class="btn-start-game" id="btn-start-game" disabled>&#x2694; 开始对战</button></div>
     </section>
     <section class="panel" id="panel-stats">
@@ -1400,6 +1412,9 @@ var game = {
     }
     renderAll();
     switchPanel("battle");
+    if (this.player.cardList.length === 0) {
+      this.nextRound();
+    }
     toast("游戏已加载");
   },
 
@@ -1432,7 +1447,7 @@ var game = {
     p.water_level = d.wlv;
     p._critR = d.crt; p._critD = d.crD; p._defR = d.def;
 
-    var allDefs = isBoss ? ALL_BOSS_CARDS : game.selectedCards;
+    var allDefs = isBoss ? ALL_BOSS_CARDS : ALL_PLAYER_CARDS;
     var defById = {};
     for (var i = 0; i < allDefs.length; i++) defById[allDefs[i].id] = allDefs[i];
 
@@ -1459,6 +1474,11 @@ var game = {
       var debuff = makeBuff(dd.name, false, dd.lr, dd.name);
       if (dd.perm) debuff.isPermanent = true;
       p.debuffs.push(debuff);
+    }
+    if (!isBoss) {
+      game.selectedCards = ALL_PLAYER_CARDS.filter(function(def) {
+        return d.types.indexOf(def.id) !== -1;
+      });
     }
     return p;
   },
@@ -1507,6 +1527,15 @@ function initDeckBuilder() {
       if (cb) cb.checked = selectedNames.has(name);
     }
   }
+
+  btn.addEventListener("click", function() {
+    if (selectedNames.size < MIN_DECK_SIZE) {
+      toast("请至少选择8张卡牌");
+      return;
+    }
+    var cardDefs = ALL_PLAYER_CARDS.filter(function(d) { return selectedNames.has(d.name); });
+    game.startGame(cardDefs);
+  });
 
   grid.innerHTML = "";
   for (var di = 0; di < ALL_PLAYER_CARDS.length; di++) {
@@ -1593,15 +1622,41 @@ function initDeckBuilder() {
 
   updateUI();
 
-  btn.addEventListener("click", function() {
-    if (selectedNames.size < MIN_DECK_SIZE) {
-      toast("请至少选择8张卡牌");
-      return;
-    }
-    var cardDefs = ALL_PLAYER_CARDS.filter(function(d) { return selectedNames.has(d.name); });
-    game.startGame(cardDefs);
-  });
-}
+  // --- preset buttons ---
+  var PRESETS = {
+    qiqiao: { name: "基本乞巧体系", desc: "猛兽+乞巧组合，利用月相循环机制打出高额伤害", cards: ["老虎","猪","猎豹","乞巧族-猫长老","乞巧族-鼠力士","乞巧族-狐先知","乞巧族-月桂兔","乞巧族-金鱼圣女"] }
+  };
+
+  var presetContainer = document.getElementById("deck-presets");
+  presetContainer.innerHTML = '<div class="preset-title">推荐卡组</div>';
+  var keys = Object.keys(PRESETS);
+  for (var ki = 0; ki < keys.length; ki++) {
+    var pk = keys[ki];
+    var p = PRESETS[pk];
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "preset-btn";
+    btn.dataset.preset = pk;
+    btn.innerHTML = '<span class="preset-name">' + p.name + '</span><span class="preset-count">' + p.cards.length + '张</span><span class="preset-desc">' + p.desc + '</span>';
+    presetContainer.appendChild(btn);
+  }
+
+  var presetBtns = document.querySelectorAll(".preset-btn");
+  for (var pb = 0; pb < presetBtns.length; pb++) {
+    presetBtns[pb].addEventListener("click", function(e) {
+      e.stopPropagation();
+      var key = this.dataset.preset;
+      var p = PRESETS[key];
+      if (!p) return;
+      selectedNames.clear();
+      for (var pn = 0; pn < p.cards.length; pn++) selectedNames.add(p.cards[pn]);
+      var pnames = []; selectedNames.forEach(function(v) { pnames.push(v); });
+      localStorage.setItem("h5game_deck", JSON.stringify(pnames));
+      updateUI();
+    });
+  }
+
+  }
 
 // ===== UI RENDERER =====
 function getBuffIcon(buff) {
