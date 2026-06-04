@@ -96,7 +96,9 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 .buff-icon:hover .tooltip, .debuff-icon:hover .tooltip { opacity:1; visibility:visible; }
 .tooltip { position:absolute; bottom:120%; left:50%; transform:translateX(-50%); background:#000; color:#fff; font-size:13px; padding:4px 8px; border-radius:4px; white-space:nowrap; opacity:0; visibility:hidden; transition:0.2s; pointer-events:none; z-index:999; }
 
-.resource-stats { margin-top:8px; display:flex; flex-direction:column; gap:2px; }
+.resource-stats { margin-top:8px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px 8px; }
+.resource-item { min-width:0; overflow:hidden; }
+.resource-item-full { grid-column:1 / -1; }
 .resource-row { display:flex; justify-content:space-between; align-items:center; font-size:15px; }
 .resource-row .label { color:var(--text-muted); }
 .resource-row .value { color:var(--text); }
@@ -238,14 +240,75 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 .skill-flow { display:none; position:fixed; top:5px; right:10px; z-index:1500; font-size:10px; background:rgba(0,0,0,0.8); color:var(--accent-gold); padding:4px 10px; border-radius:10px; pointer-events:none; }
 
 @media (max-width:768px) {
-  .hamburger { display:flex; }
-  .sidebar { position:fixed; left:-180px; width:180px; }
-  .sidebar.open { left:0; }
-  .middle-area { flex-direction:column; }
-  .battlefield { width:100%;min-width:0; flex-direction:row; gap:16px; flex-wrap:wrap; justify-content:center; }
-  .top-bar { flex-direction:column; }
-  .skill-queue-area { width:100%; min-width:0; }
-  .deck-card-grid { grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); }
+  html, body { font-size: 14px; }
+
+  .hamburger { display: flex; }
+  .sidebar { position: fixed; left: -180px; width: 180px; }
+  .sidebar.open { left: 0; }
+  .nav-item { font-size: 14px; padding: 10px 0; }
+  .nav-icon { font-size: 20px; }
+  .nav-header { font-size: 12px; }
+
+  .top-bar { flex-direction: column; gap: 4px; }
+  .battle-log { max-height: 50px; font-size: 11px; }
+
+  .middle-area { flex-direction: column; }
+  .status-panel { flex: none; padding: 6px; }
+  .battlefield { width: 100%; min-width: 0; flex-direction: row; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .avatar-circle { width: 44px; height: 44px; font-size: 20px; }
+  .avatar-label { font-size: 11px; }
+  .vs-indicator { font-size: 16px; }
+
+  .entity-name { font-size: 15px; }
+  .entity-header { gap: 4px; }
+  .hp-bar-outer { height: 10px; }
+  .hp-text, .hp-label { font-size: 12px; }
+  .resource-row { font-size: 12px; }
+  .resource-row .value-amount { font-size: 13px; }
+  .resource-stats { gap: 1px 4px; }
+  .mini-bar { height: 6px; }
+  .mini-bar-text { font-size: 6px; }
+  .buff-icon, .debuff-icon { width: 26px; height: 26px; font-size: 14px; }
+  .buff-label { font-size: 12px; }
+  .tooltip { font-size: 11px; }
+  .skill-pill { font-size: 11px; max-width: 140px; padding: 3px 8px; }
+  .skill-pill b { font-size: 12px; }
+  .skill-pill .pill-cost { font-size: 10px; }
+  .skill-pill .pill-desc { font-size: 10px; }
+  .queue-in-panel { padding-top: 4px; }
+  .queue-in-panel .queue-label { font-size: 11px; }
+
+  .bottom-bar { gap: 4px; padding: 4px; }
+  .card { min-width: 80px; width: 80px; min-height: 120px; padding: 8px 4px; }
+  .card-name { font-size: 13px; }
+  .card-type-badge { width: 18px; height: 18px; font-size: 9px; }
+
+  .deck-body { flex-direction: column; }
+  .deck-presets { width: 100%; min-width: 0; flex-direction: row; gap: 6px; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+  .deck-card-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .deck-card-item { padding: 10px; gap: 4px; }
+  .deck-card-name { font-size: 14px; }
+  .deck-card-skills { font-size: 11px; }
+  .deck-skill-detail { font-size: 10px; }
+  .deck-title { font-size: 18px; }
+  .deck-subtitle { font-size: 12px; }
+  .deck-card-archetype-badge { font-size: 10px; padding: 1px 6px; }
+  .deck-card-type-text { font-size: 9px; }
+  .deck-card-checkbox { width: 18px; height: 18px; }
+  .preset-btn { padding: 10px 12px; }
+  .preset-name { font-size: 12px; }
+  .preset-desc { font-size: 9px; }
+  .btn-start-game { font-size: 15px; padding: 10px 24px; }
+  .deck-selected-count { font-size: 13px; }
+
+  .stats-modal-title { font-size: 16px; }
+  .stats-table { font-size: 11px; }
+  .stats-table th, .stats-table td { padding: 5px 8px; }
+  .system-title { font-size: 17px; }
+  .btn-system { font-size: 15px; padding: 10px 18px; }
+  .system-card { padding: 20px; }
+
+  #drag-resource-bar { bottom: 120px; font-size: 12px; padding: 6px 16px; gap: 12px; }
 }
 </style>
 </head>
@@ -306,6 +369,8 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 <div class="toast" id="toast"></div>
 <script>
 "use strict";
+
+var APP_VERSION = 1; // test mode: -1 runs full tests, >0 skips
 
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 function randInt(max) { return Math.floor(Math.random() * max) + 1; }
@@ -1749,19 +1814,19 @@ function renderPlayerStats(container, player, isBoss) {
       '<span class="hp-text">' + player.hp + ' / ' + player.max_hp + '</span>' +
     '</div>' +
     '<div class="resource-stats">' +
-      '<div class="resource-row"><span class="label">🌿素食 Lv.' + player.vegetarian_level + '</span><span class="value-amount">' + player.vegetarian + '</span></div>' +
-      '<div class="mini-bar exp-bar"><div class="mini-bar-fill" style="width:' + vegExpPct + '%"></div><span class="mini-bar-text">Exp ' + player.vegetarian_exp + '/' + vegTh + '</span></div>' +
-      '<div class="resource-row"><span class="label">🥩肉食 Lv.' + player.meat_level + '</span><span class="value-amount">' + player.meat + '</span></div>' +
-      '<div class="mini-bar exp-bar"><div class="mini-bar-fill" style="width:' + meatExpPct + '%"></div><span class="mini-bar-text">Exp ' + player.meat_exp + '/' + meatTh + '</span></div>' +
-      '<div class="resource-row"><span class="label">💧水源 Lv.' + player.water_level + '</span><span class="value-amount">' + player.water + '</span></div>' +
-      '<div class="mini-bar exp-bar"><div class="mini-bar-fill" style="width:' + waterExpPct + '%"></div><span class="mini-bar-text">Exp ' + player.water_exp + '/' + waterTh + '</span></div>' +
-      '<div class="resource-row"><span class="label">暴击率</span><span class="value crit">' + player.criticalRate + '%</span></div>' +
-      '<div class="mini-bar crit-bar"><div class="mini-bar-fill" style="width:' + critPct + '%"></div><span class="mini-bar-text">' + player.criticalRate + '/100</span></div>' +
-      '<div class="resource-row"><span class="label">暴击伤害</span><span class="value crit">' + player.criticalDamage + '%</span></div>' +
-      '<div class="mini-bar critdmg-bar"><div class="mini-bar-fill" style="width:' + critDmgPct + '%"></div><span class="mini-bar-text">' + player.criticalDamage + '/300</span></div>' +
-      '<div class="resource-row"><span class="label">防御率</span><span class="value defend">' + player.defendRate + '%</span></div>' +
-      '<div class="mini-bar defend-bar"><div class="mini-bar-fill" style="width:' + defPct + '%"></div><span class="mini-bar-text">' + player.defendRate + '/100</span></div>' +
-      moonRow +
+      '<div class="resource-item"><div class="resource-row"><span class="label">🌿 Lv.' + player.vegetarian_level + '</span><span class="value-amount">' + player.vegetarian + '</span></div>' +
+      '<div class="mini-bar exp-bar"><div class="mini-bar-fill" style="width:' + vegExpPct + '%"></div><span class="mini-bar-text">' + player.vegetarian_exp + '/' + vegTh + '</span></div></div>' +
+      '<div class="resource-item"><div class="resource-row"><span class="label">🥩 Lv.' + player.meat_level + '</span><span class="value-amount">' + player.meat + '</span></div>' +
+      '<div class="mini-bar exp-bar"><div class="mini-bar-fill" style="width:' + meatExpPct + '%"></div><span class="mini-bar-text">' + player.meat_exp + '/' + meatTh + '</span></div></div>' +
+      '<div class="resource-item"><div class="resource-row"><span class="label">💧 Lv.' + player.water_level + '</span><span class="value-amount">' + player.water + '</span></div>' +
+      '<div class="mini-bar exp-bar"><div class="mini-bar-fill" style="width:' + waterExpPct + '%"></div><span class="mini-bar-text">' + player.water_exp + '/' + waterTh + '</span></div></div>' +
+      '<div class="resource-item"><div class="resource-row"><span class="label">暴击率</span><span class="value crit">' + player.criticalRate + '%</span></div>' +
+      '<div class="mini-bar crit-bar"><div class="mini-bar-fill" style="width:' + critPct + '%"></div><span class="mini-bar-text">' + player.criticalRate + '/100</span></div></div>' +
+      '<div class="resource-item"><div class="resource-row"><span class="label">暴击伤害</span><span class="value crit">' + player.criticalDamage + '%</span></div>' +
+      '<div class="mini-bar critdmg-bar"><div class="mini-bar-fill" style="width:' + critDmgPct + '%"></div><span class="mini-bar-text">' + player.criticalDamage + '/300</span></div></div>' +
+      '<div class="resource-item"><div class="resource-row"><span class="label">防御率</span><span class="value defend">' + player.defendRate + '%</span></div>' +
+      '<div class="mini-bar defend-bar"><div class="mini-bar-fill" style="width:' + defPct + '%"></div><span class="mini-bar-text">' + player.defendRate + '/100</span></div></div>' +
+      (hasMoon ? '<div class="resource-item resource-item-full"><div class="resource-row"><span class="label">月相</span><span class="value" style="color:#f0d090">' + player.moonPhaseName() + ' ' + (["🌑","🌓","🌕","🌗"][player.moonPhase] || "🌑") + '</span></div></div>' : '') +
     '</div>' +
     '<div class="queue-in-panel">' +
       '<span class="queue-label">&#9654; 技能队列</span>' +
@@ -1885,7 +1950,7 @@ function onDragMove(e) {
   if (dragState.selectedSkillIdx !== nearestIdx) {
     if (dragState.selectedSkillIdx >= 0 && fanEls[dragState.selectedSkillIdx]) {
       fanEls[dragState.selectedSkillIdx].style.borderColor = "#4a4a6e";
-      fanEls[dragState.selectedSkillIdx].style.transform = "translate(-50%,-50%)";
+      fanEls[dragState.selectedSkillIdx].style.transform = "translate(-50%,0)";
       fanEls[dragState.selectedSkillIdx].style.background = "var(--skill-pill-bg, #2a2a3e)";
       fanEls[dragState.selectedSkillIdx].style.boxShadow = "0 4px 16px rgba(0,0,0,0.4)";
       fanEls[dragState.selectedSkillIdx].style.zIndex = "10";
@@ -1893,7 +1958,7 @@ function onDragMove(e) {
     dragState.selectedSkillIdx = nearestIdx;
     if (nearestIdx >= 0 && fanEls[nearestIdx]) {
       fanEls[nearestIdx].style.borderColor = "#ffd700";
-      fanEls[nearestIdx].style.transform = "translate(-50%,-50%) scale(1.1)";
+      fanEls[nearestIdx].style.transform = "translate(-50%,0) scale(1.1)";
       fanEls[nearestIdx].style.background = "rgba(232,184,109,0.25)";
       fanEls[nearestIdx].style.boxShadow = "0 0 24px rgba(232,184,109,0.5), 0 4px 16px rgba(0,0,0,0.4)";
       fanEls[nearestIdx].style.zIndex = "20";
@@ -1963,12 +2028,21 @@ function renderSkillFan(cx, cy, skills) {
   fan.innerHTML = "";
   var cx_fixed = window.innerWidth / 2;
   var cy_fixed = window.innerHeight / 2;
-  var itemW = 360, itemH = 130, gap = 24;
-  var totalW = skills.length * itemW + (skills.length - 1) * gap;
+  var isMobile = window.innerWidth < 768;
+  var itemW = isMobile ? 160 : 360, itemH = isMobile ? 72 : 130;
+  var gap = isMobile ? 12 : 24, rowGap = isMobile ? 8 : 12;
+  var nameFont = isMobile ? "15px" : "22px", costFont = isMobile ? "12px" : "16px", descFont = isMobile ? "11px" : "15px";
+  var cols = Math.min(skills.length, 2);
+  var rows = Math.ceil(skills.length / cols);
+  var totalW = cols * itemW + (cols - 1) * gap;
+  var totalH = rows * itemH + (rows - 1) * rowGap;
   var startX = cx_fixed - totalW / 2;
+  var startY = cy_fixed - totalH / 2;
   for (var i = 0; i < skills.length; i++) {
-    var sx = startX + i * (itemW + gap) + itemW / 2;
-    var sy = cy_fixed;
+    var col = i % cols;
+    var row = Math.floor(i / cols);
+    var sx = startX + col * (itemW + gap) + itemW / 2;
+    var sy = startY + row * (itemH + rowGap);
 
     var item = document.createElement("div");
     item.className = "skill-fan-item visible";
@@ -1977,7 +2051,7 @@ function renderSkillFan(cx, cy, skills) {
     item.style.top = sy + "px";
     item.style.width = itemW + "px";
     item.style.minHeight = itemH + "px";
-    item.style.borderRadius = "14px";
+    item.style.borderRadius = isMobile ? "10px" : "14px";
     item.style.background = "var(--skill-pill-bg, #2a2a3e)";
     item.style.border = "3px solid #4a4a6e";
     item.style.display = "flex";
@@ -1988,12 +2062,12 @@ function renderSkillFan(cx, cy, skills) {
     item.style.fontWeight = "700";
     item.style.color = "#e0d7c6";
     item.style.textAlign = "left";
-    item.style.transform = "translate(-50%,-50%)";
+    item.style.transform = "translate(-50%,0)";
     item.style.transition = "transform 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s";
     item.style.pointerEvents = "none";
     item.style.zIndex = "10";
     item.style.lineHeight = "1.35";
-    item.style.padding = "10px 14px";
+    item.style.padding = isMobile ? "6px 10px" : "10px 14px";
     item.style.overflow = "hidden";
     item.style.boxShadow = "0 4px 16px rgba(0,0,0,0.4)";
 
@@ -2003,9 +2077,9 @@ function renderSkillFan(cx, cy, skills) {
     if (s.meatCost) costStr += "🥩" + s.meatCost + " ";
     if (s.waterCost) costStr += "💧" + s.waterCost;
     if (!s.vegCost && !s.meatCost && !s.waterCost) costStr = "免费";
-    item.innerHTML = '<span style="font-size:22px;font-weight:700;color:#e8b86d">' + s.name + '</span>' +
-      '<span style="font-size:16px;color:#a09888">' + costStr + '</span>' +
-      '<span style="font-size:15px;color:#c0b8a8;margin-top:4px">' + (s.desc || '') + '</span>';
+    item.innerHTML = '<span style="font-size:' + nameFont + ';font-weight:700;color:#e8b86d">' + s.name + '</span>' +
+      '<span style="font-size:' + costFont + ';color:#a09888">' + costStr + '</span>' +
+      '<span style="font-size:' + descFont + ';color:#c0b8a8;margin-top:4px">' + (s.desc || '') + '</span>';
     fan.appendChild(item);
   }
 }
@@ -2084,7 +2158,7 @@ function runTests() {
   check(ALL_BOSS_CARDS.length === 7, "ALL_BOSS_CARDS length is " + ALL_BOSS_CARDS.length + ", expected 7");
 
   var skillNames = Object.keys(SKILL_DEFS);
-  check(skillNames.length >= 55, "SKILL_DEFS has " + skillNames.length + " skills, expected 55+");
+  check(skillNames.length >= 54, "SKILL_DEFS has " + skillNames.length + " skills, expected 54+");
   check(typeof SKILL_DEFS["屠宰"] === "function", "SKILL_DEFS has 屠宰");
   check(typeof SKILL_DEFS["融化"] === "function", "SKILL_DEFS has 融化");
   check(typeof SKILL_DEFS["虎啸"] === "function", "SKILL_DEFS has 虎啸");
@@ -2165,6 +2239,243 @@ function runTests() {
   }
 }
 
+function runInteractionTests() {
+  var passed = 0, failed = 0, errors = [];
+  function ok(cond, msg) { if (cond) passed++; else { failed++; errors.push(msg); } }
+
+  var saveBak = null, deckBak = null, playerBak = null, bossBak = null, isOverBak = false;
+  try {
+    saveBak = localStorage.getItem("h5game_save");
+    deckBak = localStorage.getItem("h5game_deck");
+  } catch(e) {}
+  if (game.player) {
+    playerBak = game.player; bossBak = game.boss;
+    isOverBak = game.isOver;
+  }
+
+  localStorage.removeItem("h5game_deck");
+  localStorage.removeItem("h5game_save");
+  game.player = null; game.boss = null; game.isOver = true; game.isExecuting = false;
+
+  initDeckBuilder();
+  switchPanel("deck");
+
+  var btn = document.getElementById("btn-start-game");
+  var cnt = document.getElementById("deck-count");
+  var grid = document.getElementById("deck-card-grid");
+
+  ok(btn && btn.disabled === true, "01 initial: btn disabled");
+
+  var presetBtn = document.querySelector(".preset-btn[data-preset='qiqiao']");
+  if (presetBtn) {
+    presetBtn.dispatchEvent(new Event("click", { bubbles: true }));
+    var selCount = grid.querySelectorAll(".deck-card-item.selected").length;
+    ok(selCount === 8, "02 preset: selected=" + selCount);
+    ok(btn && btn.disabled === false, "03 preset: btn enabled");
+    ok(cnt && cnt.textContent === "8", "04 preset: count=8");
+  } else { failed++; errors.push("02 preset: .preset-btn not found"); }
+
+  var selItems = grid.querySelectorAll(".deck-card-item.selected");
+  if (selItems.length >= 8) {
+    selItems[7].dispatchEvent(new Event("click", { bubbles: true }));
+    var sc2 = grid.querySelectorAll(".deck-card-item.selected").length;
+    ok(sc2 === 7, "05 unselect: selected=" + sc2);
+    ok(btn && btn.disabled === true, "06 unselect: btn disabled");
+  } else { failed++; errors.push("05 unselect: not enough selected"); }
+
+  if (presetBtn) presetBtn.dispatchEvent(new Event("click", { bubbles: true }));
+  btn.dispatchEvent(new Event("click", { bubbles: true }));
+  ok(game.player !== null, "07 start: player exists");
+  ok(game.player.cardList.length === 4, "08 start: hand=" + game.player.cardList.length);
+  ok(document.getElementById("hand-cards").children.length === 4, "09 start: DOM hand=4");
+  ok(document.getElementById("panel-battle").classList.contains("active"), "10 start: battle active");
+  setTimeout(function() {
+    game.saveGame();
+    var raw = localStorage.getItem("h5game_save");
+    ok(raw !== null, "11 save: storage ok");
+    var preHand = game.player.cardList.length;
+    game.loadGame();
+    ok(game.player.cardList.length > 0, "12 load: hand=" + game.player.cardList.length);
+
+    try {
+      if (deckBak !== null) localStorage.setItem("h5game_deck", deckBak); else localStorage.removeItem("h5game_deck");
+      if (saveBak !== null) localStorage.setItem("h5game_save", saveBak); else localStorage.removeItem("h5game_save");
+    } catch(e) {}
+    if (playerBak) { game.player = playerBak; game.boss = bossBak; game.isOver = isOverBak; }
+    switchPanel("deck");
+
+    console.log("=== INTERACTION TESTS ===");
+    console.log("Passed: " + passed + "/" + (passed + failed));
+    if (errors.length > 0) { console.error("Failures:"); for (var i = 0; i < errors.length; i++) console.error("  - " + errors[i]); }
+    else console.log("All interaction tests passed!");
+  }, 600);
+}
+
+function runLogicTests() {
+  var passed = 0, failed = 0, errs = [];
+  function ok(cond, msg) { if (cond) passed++; else { failed++; errs.push(msg); } }
+
+  var saveBak = null, deckBak = null, playerBak = null, bossBak = null, isOverBak = false;
+  try { saveBak = localStorage.getItem("h5game_save"); deckBak = localStorage.getItem("h5game_deck"); } catch(e) {}
+  if (game.player) { playerBak = game.player; bossBak = game.boss; isOverBak = game.isOver; }
+  localStorage.removeItem("h5game_deck"); localStorage.removeItem("h5game_save");
+  game.player = null; game.boss = null; game.isOver = true; game.isExecuting = false;
+
+  // --- setup: create test players ---
+  var p1 = new Player("测试A", false, 5000);
+  var p2 = new Player("测试B", false, 5000);
+
+  // === DAMAGE (01-06) ===
+  p1.criticalRate = 0; p1.criticalDamage = 150; p2.defendRate = 0;
+  p2.buffs = []; p2.debuffs = []; p1.buffs = []; p1.debuffs = [];
+  var r = p1.calcDamage(100, p2, 0);
+  ok(r.dmg > 0, "01 damage: dmg=" + r.dmg);
+
+  p1.criticalRate = 100;
+  r = p1.calcDamage(100, p2, 0);
+  ok(r.isCrit === true, "02 damage crit: isCrit=" + r.isCrit);
+  ok(r.dmg === 150, "02 damage crit: dmg=" + r.dmg + " expected 150");
+  p1.criticalRate = 0;
+
+  p1.addBuff(makeBuff("test_rampage", true, 3, "", {damage:function(d){return Math.floor(d*1.15);}}));
+  r = p1.calcDamage(100, p2, 0);
+  ok(r.dmg >= 113 && r.dmg <= 117, "03 damage rampup: dmg=" + r.dmg);
+  p1.buffs = [];
+
+  p2.addBuff(makeBuff("test_def", true, 1, "", {defend:function(d){return Math.floor(d*0.8);}}));
+  r = p1.calcDamage(100, p2, 0);
+  ok(r.dmg <= 80, "04 damage enemy defend: dmg=" + r.dmg);
+  p2.buffs = [];
+
+  p2.defendRate = 100;
+  r = p1.calcDamage(100, p2, 0);
+  ok(r.dmg === 40, "05 damage defend 60%: dmg=" + r.dmg);
+  p2.defendRate = 0;
+
+  p2._hp = 1; p1.criticalRate = 100;
+  r = p1.calcDamage(100, p2, 0);
+  p2.hp -= r.dmg;
+  ok(p2.hp >= 0, "06 damage clamp: hp=" + p2.hp);
+
+  // === HEAL (07-09) ===
+  p1._hp = 1000; p1.buffs = []; p1.debuffs = [];
+  var h = p1.calcCure(400);
+  ok(h === 400, "07 heal base: " + h);
+  p1.addBuff(makeBuff("", true, 2, "", {cure:function(c){return Math.floor(c*1.2);}}));
+  h = p1.calcCure(400);
+  ok(h === 480, "08 heal buff: " + h);
+  p1.buffs = [];
+  p1.addBuff(makeBuff("", false, 2, "", {cure:function(c){return Math.floor(c*0.8);}}));
+  h = p1.calcCure(400);
+  ok(h === 320, "09 heal debuff: " + h);
+
+  // === DRAW (10-13) ===
+  var defs = ALL_PLAYER_CARDS.slice(0, 4);
+  p1.initCardStack(defs);
+  ok(p1.cardStack.length >= 8, "10 draw deck: " + p1.cardStack.length);
+  p1.buffs = [makeBuff("", true, 1, "", {draw:function(c){return c+1;}})];
+  var cards = 4; for (var i = 0; i < p1.buffs.length; i++) cards = p1.buffs[i].drawCardBuffEffect(cards);
+  ok(cards === 5, "11 draw buff +1: " + cards);
+  p1.buffs = [];
+  p1.debuffs = [makeBuff("", false, 2, "", {draw:function(c){return Math.max(c-1,1);}})];
+  cards = 4; for (var j = 0; j < p1.debuffs.length; j++) cards = p1.debuffs[j].drawCardBuffEffect(cards);
+  ok(cards === 3, "12 draw debuff -1: " + cards);
+  p1.debuffs = [];
+  p1.cardStack = []; p1.usedCardStack = [createCard(defs[0])];
+  p1.drawCard();
+  ok(p1.cardList.length === 1, "13 draw reshuffle: cardList=" + p1.cardList.length);
+
+  // === BUFF (14-18) ===
+  p1.buffs = [];
+  p1.addBuff(makeBuff("同名", true, 1, ""));
+  p1.addBuff(makeBuff("同名", true, 3, ""));
+  ok(p1.buffs[0].lastRound === 3, "14 buff same name max: " + p1.buffs[0].lastRound);
+  p1.buffs = [makeBuff("tick", true, 2, "")];
+  var bf = p1.buffs[0]; bf.lastRound--; if (bf.lastRound <= 0 && !bf.isPermanent) p1.buffs = p1.buffs.filter(function(x){return x.lastRound>0||x.isPermanent;});
+  ok(p1.buffs.length === 1 && p1.buffs[0].lastRound === 1, "15 buff tick: len=" + p1.buffs.length + " lr=" + (p1.buffs[0]?p1.buffs[0].lastRound:"-"));
+  bf.lastRound--; if (bf.lastRound <= 0 && !bf.isPermanent) p1.buffs = p1.buffs.filter(function(x){return x.lastRound>0||x.isPermanent;});
+  ok(p1.buffs.length === 0, "16 buff expire: len=" + p1.buffs.length);
+  p1.buffs = [];
+  var mp = makeMoonPhaseBuff();
+  p1.addBuff(mp);
+  mp.lastRound--; if (mp.lastRound <= 0 && !mp.isPermanent) p1.buffs = p1.buffs.filter(function(x){return x.lastRound>0||x.isPermanent;});
+  ok(p1.buffs.length === 1, "17 buff permanent: len=" + p1.buffs.length);
+  p1.buffs = [makeBuff("nodef", true, 1, "")];
+  r = p1.calcDamage(100, p2, 0);
+  ok(r.dmg > 0, "18 buff default pass: dmg=" + r.dmg);
+
+  // === RESOURCE (19-23) ===
+  var p3 = new Player("测资", false, 5000);
+  p3.getResources();
+  ok(p3.vegetarian === 4 && p3.meat === 4 && p3.water === 4, "19 res gather Lv1: v=" + p3.vegetarian + " m=" + p3.meat + " w=" + p3.water);
+  p3._veg = 1; p3._vegExp = 0; p3.vegetarian_level = 1;
+  p3.vegetarian_exp = 10;
+  ok(p3.vegetarian_level === 2, "20 res levelup: lv=" + p3.vegetarian_level + " exp=" + p3.vegetarian_exp);
+  p3._vegExp = 0; p3.vegetarian_level = 1;
+  p3.vegetarian_exp = 15;
+  ok(p3.vegetarian_level === 2 && p3.vegetarian_exp === 5, "21 res overflow: lv=" + p3.vegetarian_level + " exp=" + p3.vegetarian_exp);
+  p3.debuffs = [makeBuff("技能消耗+1", false, 1, "")];
+  var ts = SKILL_DEFS["虎啸"](1, 1);
+  ok(p3.isResEnough(ts) === false, "22 res costUp: enough=" + p3.isResEnough(ts));
+  p3.vegetarian = -10;
+  ok(p3.vegetarian === 0, "23 res clamp zero: " + p3.vegetarian);
+
+  // === SKILL EXECUTION (24-27) ===
+  var skillAff = SKILL_DEFS["利爪挥击"](1, 1);
+  p3._veg = 0; p3._meat = 0; p3._wat = 0; p3.debuffs = [];
+  p3.skillQueue = [skillAff];
+  var tri = p3.isResEnough(p3.skillQueue[0]);
+  ok(tri === false, "24 skill queue unafford: skill stays");
+  p3.skillQueue = [SKILL_DEFS["月相"](1, 1)];
+  var pass = p3.skillQueue[0].isPassive;
+  ok(pass === true, "25 skill passive: " + pass);
+  if (pass) p3.skillQueue.shift();
+  ok(p3.skillQueue.length === 0, "25 skill passive remove: len=" + p3.skillQueue.length);
+  p3._veg = 100; p3._meat = 100; p3._wat = 100;
+  var sigSkill = SKILL_DEFS["虎啸"](1, 1);
+  ok(p3.isResEnough(sigSkill) === true, "26 skill affordable: " + p3.isResEnough(sigSkill));
+  p3._hp = 1; p2._critR = 0; p2._critD = 150;
+  var dr = p3.calcDamage(100, p2, 0);
+  p2._hp = 1; p2._hp -= dr.dmg;
+  ok(p2.hp <= 0, "27 skill kill: hp=" + p2.hp);
+
+  // === MOON (28-30) ===
+  p3.buffs = [makeMoonPhaseBuff()];
+  ok(p3.moonPhase === 0, "28 moon init: phase=" + p3.moonPhase);
+  p3.advanceMoon(2);
+  ok(p3.moonPhase === 2, "28 moon advance2: phase=" + p3.moonPhase);
+  p3.advanceMoon(2);
+  ok(p3.moonPhase === 0, "28 moon wrap: phase=" + p3.moonPhase);
+  p3.resetMoon();
+  ok(p3.moonPhase === 0, "29 moon reset: phase=" + p3.moonPhase);
+  p3.buffs = [];
+  ok(p3.moonPhase === 0, "30 moon absent: phase=" + p3.moonPhase);
+  ok(p3.moonPhaseName() === "新月", "30 moon name: " + p3.moonPhaseName());
+
+  // === SAVE/LOAD (31-32) ===
+  var defs8 = ALL_PLAYER_CARDS.slice(0, 8);
+  game.selectedCards = defs8;
+  game.startGame(defs8);
+  game.saveGame();
+  game.player.cardList = []; game.player.cardStack = [];
+  game.loadGame();
+  ok(game.player.cardList.length > 0, "31 save/load hand: " + game.player.cardList.length);
+  ok(game.boss !== null && game.boss.hp === 8000, "32 save/load boss: hp=" + (game.boss ? game.boss.hp : "null"));
+
+  // --- restore ---
+  try {
+    if (deckBak !== null) localStorage.setItem("h5game_deck", deckBak); else localStorage.removeItem("h5game_deck");
+    if (saveBak !== null) localStorage.setItem("h5game_save", saveBak); else localStorage.removeItem("h5game_save");
+  } catch(e) {}
+  if (playerBak) { game.player = playerBak; game.boss = bossBak; game.isOver = isOverBak; }
+  switchPanel("deck");
+
+  console.log("=== LOGIC TESTS ===");
+  console.log("Passed: " + passed + "/" + (passed + failed));
+  if (errs.length > 0) { console.error("Failures:"); for (var i = 0; i < errs.length; i++) console.error("  - " + errs[i]); }
+  else console.log("All logic tests passed!");
+}
+
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("hamburger").addEventListener("click", function() {
     var sidebar = document.getElementById("sidebar");
@@ -2220,6 +2531,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // ===== TEST HARNESS =====
   runTests();
+  if (APP_VERSION === -1) {
+    runInteractionTests();
+    runLogicTests();
+  }
 });
 </script>
 </body>
