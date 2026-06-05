@@ -901,13 +901,13 @@ var ALL_BOSS_CARDS = [
 ];
 
 var MANTIS_BOSS_CARDS = [
-  {id:"MatisSpring",type:"LAND",harvestNum:1,skills:["争农时"]},
-  {id:"MantisSickle",type:"LAND",harvestNum:1,skills:["麦镰"]},
-  {id:"MantisSeed",type:"LAND",harvestNum:1,skills:["播种"]},
-  {id:"MantisClaw",type:"LAND",slaughterNum:1,skills:["磨爪"]},
-  {id:"MantisRain",type:"SEA",liquifyNum:1,skills:["雾雨"]},
-  {id:"MantisWash",type:"SEA",liquifyNum:1,skills:["涓流"]},
-  {id:"MantisStorm",type:"SEA",liquifyNum:1,skills:["雷雨惊"]}
+  {id:"MatisSpring",name:"争农时",type:"LAND",harvestNum:1,skills:["争农时"]},
+  {id:"MantisSickle",name:"麦镰",type:"LAND",harvestNum:1,skills:["麦镰"]},
+  {id:"MantisSeed",name:"播种",type:"LAND",harvestNum:1,skills:["播种"]},
+  {id:"MantisClaw",name:"磨爪",type:"LAND",slaughterNum:1,skills:["磨爪"]},
+  {id:"MantisRain",name:"雾雨",type:"SEA",liquifyNum:1,skills:["雾雨"]},
+  {id:"MantisWash",name:"涓流",type:"SEA",liquifyNum:1,skills:["涓流"]},
+  {id:"MantisStorm",name:"雷雨惊",type:"SEA",liquifyNum:1,skills:["雷雨惊"]}
 ];
 
 // ===== CARD FACTORY =====
@@ -1035,7 +1035,6 @@ Player.prototype = {
   },
 
   resetStats: function() {
-    this.max_hp = this.isBoss ? 8000 : 5000;
     this._hp = this.max_hp;
     this._veg = 1; this.vegetarian_level = 1; this._vegExp = 0;
     this._meat = 1; this.meat_level = 1; this._meatExp = 0;
@@ -1540,7 +1539,7 @@ var game = {
     if (!logEl) return;
     var cls = "system";
     if (str.indexOf("玩家") !== -1) cls = "player";
-    if (str.indexOf("小小雪人") !== -1) cls = "boss";
+    else if (game.boss && str.indexOf(game.boss.name) !== -1) cls = "boss";
     var div = document.createElement("div");
     div.className = "log-entry " + cls;
     div.textContent = str;
@@ -1594,7 +1593,7 @@ var game = {
         var l = this.log[li];
         var cls = "system";
         if (l.indexOf("玩家") !== -1) cls = "player";
-        if (l.indexOf("小小雪人") !== -1) cls = "boss";
+        else if (game.boss && l.indexOf(game.boss.name) !== -1) cls = "boss";
         var div = document.createElement("div");
         div.className = "log-entry " + cls;
         div.textContent = l;
@@ -1686,7 +1685,7 @@ var game = {
   _createSkill: function(name, cardName) {
     var fn = SKILL_DEFS[name];
     if (!fn) return null;
-    var allDefs = ALL_PLAYER_CARDS.concat(ALL_BOSS_CARDS);
+    var allDefs = ALL_PLAYER_CARDS.concat(ALL_BOSS_CARDS, MANTIS_BOSS_CARDS);
     var def = null;
     for (var i = 0; i < allDefs.length; i++) {
       if (allDefs[i].name === cardName) { def = allDefs[i]; break; }
