@@ -30,7 +30,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; background:var(--bg); color:var(--text); font-size:20px; }
 
-.app-container { display:flex; width:100%; height:100vh; overflow:hidden; }
+.app-container { display:flex; width:100%; height:100%; overflow:hidden; }
 
 .sidebar { width:70px; min-width:70px; height:100%; background:var(--sidebar-bg); display:flex; flex-direction:column; align-items:center; padding-top:16px; transition:width 0.3s; overflow:hidden; z-index:100; position:relative; }
 .sidebar.open { width:200px; }
@@ -392,6 +392,7 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 var APP_VERSION = 1; // test mode: -1 runs full tests, >0 skips
 
 var CHANGELOG = [
+  { date: "2026-06-07", text: "修复手机Chrome底部按钮不显示：100vh→100%绕过地址栏动态视口bug" },
   { date: "2026-06-05", text: "修复移动端下开始游戏按钮无法显示的问题" }
 ];
 
