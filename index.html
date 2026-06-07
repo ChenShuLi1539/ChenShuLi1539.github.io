@@ -192,7 +192,7 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 .deck-skill-detail { font-size:12px; color:var(--text-muted); line-height:1.35; margin:1px 0 1px 8px; }
 .deck-skill-cost { font-size:11px; color:#a09888; }
 .deck-card-checkbox { position:absolute; top:10px; right:10px; width:22px; height:22px; cursor:pointer; accent-color:var(--accent-gold); }
-.deck-footer { display:flex; align-items:center; gap:12px; }
+.deck-footer { display:flex; align-items:center; gap:12px; flex-shrink:0; }
 .deck-selected-count { font-size:16px; color:var(--text-muted); }
 .btn-start-game { padding:12px 32px; border-radius:24px; background:var(--accent-gold); border:none; color:#fff; font-weight:700; cursor:pointer; font-size:18px; }
 .btn-start-game:disabled { opacity:0.4; cursor:not-allowed; }
@@ -238,6 +238,15 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 
 /* Skill flow indicator (non-interactive) */
 .skill-flow { display:none; position:fixed; top:5px; right:10px; z-index:1500; font-size:10px; background:rgba(0,0,0,0.8); color:var(--accent-gold); padding:4px 10px; border-radius:10px; pointer-events:none; }
+
+/* Changelog Panel */
+#panel-changelog { flex-direction:column; align-items:center; justify-content:center; }
+.changelog-card { background:var(--panel-bg); border-radius:12px; padding:24px; max-width:600px; width:100%; max-height:80vh; display:flex; flex-direction:column; }
+.changelog-title { font-size:22px; font-weight:700; margin-bottom:16px; text-align:center; }
+.changelog-list { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
+.changelog-item { border-left:3px solid var(--accent-gold); padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:0 8px 8px 0; }
+.changelog-date { font-size:12px; color:var(--accent-gold); margin-bottom:3px; }
+.changelog-text { font-size:14px; color:var(--text); line-height:1.5; }
 
 @media (max-width:768px) {
   html, body { font-size: 14px; }
@@ -309,6 +318,9 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
   .system-card { padding: 20px; }
 
   #drag-resource-bar { bottom: 120px; font-size: 12px; padding: 6px 16px; gap: 12px; }
+  .changelog-title { font-size: 17px; }
+  .changelog-card { padding: 16px; max-height: 85vh; }
+  .changelog-text { font-size: 12px; }
 }
 </style>
 </head>
@@ -321,6 +333,7 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
       <a class="nav-item" data-panel="deck"><span class="nav-icon">&#x1F0CF;</span> 组卡</a>
       <a class="nav-item" data-panel="stats"><span class="nav-icon">&#x1F4CA;</span> 数据</a>
       <a class="nav-item" data-panel="system"><span class="nav-icon">&#x2699;</span> 系统</a>
+      <a class="nav-item" data-panel="changelog"><span class="nav-icon">&#x1F4CB;</span> 日志</a>
     </nav>
   </aside>
   <main class="main-content">
@@ -356,6 +369,12 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
     <section class="panel" id="panel-system">
       <div class="system-card"><div class="system-title">&#x2699; 系统设置</div><div class="system-buttons"><button class="btn-system save" id="btn-save">&#x1F4BE; 保存游戏</button><button class="btn-system load" id="btn-load">&#x1F4C2; 加载游戏</button><button class="btn-system reset" id="btn-reset">&#x1F504; 重置游戏</button></div></div>
     </section>
+    <section class="panel" id="panel-changelog">
+      <div class="changelog-card">
+        <div class="changelog-title">&#x1F4CB; 更新日志</div>
+        <div class="changelog-list" id="changelog-list"></div>
+      </div>
+    </section>
   </main>
 </div>
 <div id="drag-overlay">
@@ -371,6 +390,23 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 "use strict";
 
 var APP_VERSION = 1; // test mode: -1 runs full tests, >0 skips
+
+var CHANGELOG = [
+  { date: "2026-06-05", text: "修复移动端下开始游戏按钮无法显示的问题" }
+];
+
+function renderChangelog() {
+  var list = document.getElementById("changelog-list");
+  if (!list) return;
+  list.innerHTML = "";
+  for (var i = 0; i < CHANGELOG.length; i++) {
+    var item = CHANGELOG[i];
+    var div = document.createElement("div");
+    div.className = "changelog-item";
+    div.innerHTML = '<div class="changelog-date">' + item.date + '</div><div class="changelog-text">' + item.text + '</div>';
+    list.appendChild(div);
+  }
+}
 
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 function randInt(max) { return Math.floor(Math.random() * max) + 1; }
@@ -2721,6 +2757,7 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   initDeckBuilder();
+  renderChangelog();
 
   switchPanel("deck");
 
