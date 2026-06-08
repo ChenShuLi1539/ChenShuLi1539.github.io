@@ -221,6 +221,27 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 .btn-system.reset { background:var(--danger); }
 .btn-system:hover { opacity:0.85; }
 
+/* Settings Rows */
+.setting-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; }
+.setting-label { font-size:15px; color:var(--text-muted); }
+.toggle-group { display:flex; gap:0; border-radius:8px; overflow:hidden; border:1px solid var(--card-border); }
+.toggle-btn { padding:6px 16px; font-size:13px; border:none; background:rgba(255,255,255,0.05); color:var(--text-muted); cursor:pointer; transition:0.2s; font-family:var(--font-stack); }
+.toggle-btn.active { background:var(--accent-gold); color:#1a1a2e; font-weight:700; }
+.toggle-btn:hover:not(.active) { background:rgba(255,255,255,0.1); }
+
+/* Click Mode Overlay */
+#click-overlay { position:fixed; top:0;left:0;right:0;bottom:0; z-index:900; display:none; }
+#click-overlay.active { display:block; }
+.card.click-selected { border-color:var(--accent-gold) !important; box-shadow:0 0 16px rgba(232,184,109,0.4) !important; transform:translateY(-6px) !important; }
+#skill-desc-tooltip { position:fixed; top:10%; left:50%; transform:translateX(-50%); z-index:1100; background:rgba(0,0,0,0.9); color:#fff; font-size:18px; padding:10px 18px; border-radius:10px; max-width:80vw; text-align:center; display:none; pointer-events:none; }
+#skill-desc-tooltip.show { display:block; }
+
+@media (max-width:768px) {
+  .toggle-btn { padding:5px 12px; font-size:11px; }
+  .setting-label { font-size:13px; }
+  .system-card { padding:16px; }
+}
+
 /* Modal */
 .modal-overlay { position:fixed; top:0;left:0;right:0;bottom:0; z-index:2000; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; }
 .modal-overlay.active { display:flex; }
@@ -367,7 +388,24 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
       <div class="stats-modal"><div class="stats-modal-header"><span class="stats-modal-title">&#x1F4CA; 战斗数据统计</span><button class="stats-modal-close" id="stats-close">&#x2715;</button></div><div class="stats-table-wrap"><table class="stats-table" id="stats-table"></table></div></div>
     </section>
     <section class="panel" id="panel-system">
-      <div class="system-card"><div class="system-title">&#x2699; 系统设置</div><div class="system-buttons"><button class="btn-system save" id="btn-save">&#x1F4BE; 保存游戏</button><button class="btn-system load" id="btn-load">&#x1F4C2; 加载游戏</button><button class="btn-system reset" id="btn-reset">&#x1F504; 重置游戏</button></div></div>
+      <div class="system-card">
+        <div class="system-title">&#x2699; 系统设置</div>
+        <div class="setting-row">
+          <span class="setting-label">使用卡牌方式</span>
+          <div class="toggle-group" id="setting-control">
+            <button class="toggle-btn" data-val="drag">拖拽</button>
+            <button class="toggle-btn" data-val="click">点击</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">技能描述文本</span>
+          <div class="toggle-group" id="setting-desc">
+            <button class="toggle-btn" data-val="full">全量</button>
+            <button class="toggle-btn" data-val="concise">简洁</button>
+          </div>
+        </div>
+        <div class="system-buttons"><button class="btn-system save" id="btn-save">&#x1F4BE; 保存游戏</button><button class="btn-system load" id="btn-load">&#x1F4C2; 加载游戏</button><button class="btn-system reset" id="btn-reset">&#x1F504; 重置游戏</button></div>
+      </div>
     </section>
     <section class="panel" id="panel-changelog">
       <div class="changelog-card">
@@ -382,6 +420,8 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
   <div class="drag-ghost-card" id="drag-ghost"><span class="card-name"></span></div>
   <div id="drag-resource-bar"></div>
 </div>
+<div id="click-overlay"></div>
+<div id="skill-desc-tooltip"></div>
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal-dialog"><h3 id="modal-title"></h3><p id="modal-message"></p><div class="modal-buttons"><button class="modal-btn" id="modal-cancel">取消</button><button class="modal-btn confirm" id="modal-confirm-btn">确认</button></div></div>
 </div>
@@ -391,7 +431,170 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 
 var APP_VERSION = 1; // test mode: -1 runs full tests, >0 skips
 
+function isMobileDevice() {
+  return /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+}
+
+var settings = {
+  control: "drag",
+  desc: "full"
+};
+
+var clickModeCard = null;
+var clickModeCardEl = null;
+var clickHighlightIdx = -1;
+
+function clickClearHighlight() {
+  if (clickHighlightIdx >= 0) {
+    var fanEls = document.getElementById("skill-fan").children;
+    if (fanEls[clickHighlightIdx]) {
+      fanEls[clickHighlightIdx].style.borderColor = "#4a4a6e";
+      fanEls[clickHighlightIdx].style.transform = "translate(-50%,0)";
+      fanEls[clickHighlightIdx].style.background = "var(--skill-pill-bg, #2a2a3e)";
+      fanEls[clickHighlightIdx].style.boxShadow = "0 4px 16px rgba(0,0,0,0.4)";
+      fanEls[clickHighlightIdx].style.zIndex = "10";
+    }
+    clickHighlightIdx = -1;
+  }
+}
+
+function clickHighlight(i) {
+  clickClearHighlight();
+  if (i < 0) return;
+  var fanEls = document.getElementById("skill-fan").children;
+  if (fanEls[i]) {
+    fanEls[i].style.borderColor = "#ffd700";
+    fanEls[i].style.transform = "translate(-50%,0) scale(1.1)";
+    fanEls[i].style.background = "rgba(232,184,109,0.25)";
+    fanEls[i].style.boxShadow = "0 0 24px rgba(232,184,109,0.5), 0 4px 16px rgba(0,0,0,0.4)";
+    fanEls[i].style.zIndex = "20";
+    clickHighlightIdx = i;
+  }
+}
+
+function cancelClickMode() {
+  clickClearHighlight();
+  clickModeCard = null;
+  if (clickModeCardEl) { clickModeCardEl.classList.remove("click-selected"); clickModeCardEl = null; }
+  document.getElementById("skill-fan").innerHTML = "";
+  document.getElementById("drag-resource-bar").classList.remove("show");
+  document.getElementById("click-overlay").classList.remove("active");
+  document.getElementById("skill-desc-tooltip").classList.remove("show");
+  var overlay = document.getElementById("drag-overlay");
+  overlay.classList.remove("active");
+  overlay.style.pointerEvents = "none";
+  if (dragState) { onDragEnd({}); }
+}
+
+function applySettingsUI() {
+  var ctrlBtns = document.getElementById("setting-control").querySelectorAll(".toggle-btn");
+  for (var bi = 0; bi < ctrlBtns.length; bi++) {
+    ctrlBtns[bi].classList.toggle("active", ctrlBtns[bi].dataset.val === settings.control);
+  }
+  var descBtns = document.getElementById("setting-desc").querySelectorAll(".toggle-btn");
+  for (var dj = 0; dj < descBtns.length; dj++) {
+    descBtns[dj].classList.toggle("active", descBtns[dj].dataset.val === settings.desc);
+  }
+}
+
+function initSettings() {
+  var dm = isMobileDevice();
+  if (!localStorage.getItem("h5game_control")) settings.control = dm ? "click" : "drag";
+  else settings.control = localStorage.getItem("h5game_control");
+  if (!localStorage.getItem("h5game_desc")) settings.desc = dm ? "concise" : "full";
+  else settings.desc = localStorage.getItem("h5game_desc");
+  applySettingsUI();
+  document.getElementById("setting-control").addEventListener("click", function(e) {
+    if (!e.target.classList.contains("toggle-btn")) return;
+    settings.control = e.target.dataset.val;
+    localStorage.setItem("h5game_control", settings.control);
+    applySettingsUI();
+    cancelClickMode();
+    if (game.player) renderAll();
+  });
+  document.getElementById("setting-desc").addEventListener("click", function(e) {
+    if (!e.target.classList.contains("toggle-btn")) return;
+    settings.desc = e.target.dataset.val;
+    localStorage.setItem("h5game_desc", settings.desc);
+    applySettingsUI();
+    if (game.player) renderAll();
+  });
+  document.getElementById("click-overlay").addEventListener("click", function() {
+    cancelClickMode();
+  });
+  document.getElementById("drag-overlay").addEventListener("click", function(e) {
+    if (!clickModeCard) return;
+    var fanEls = document.getElementById("skill-fan").children;
+    for (var i = 0; i < fanEls.length; i++) {
+      var rect = fanEls[i].getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        e.stopPropagation();
+        onFanSkillClick(e);
+        return;
+      }
+    }
+    cancelClickMode();
+  });
+  document.addEventListener("mousemove", function(e) {
+    if (!clickModeCard) return;
+    var fanEls = document.getElementById("skill-fan").children;
+    var found = false;
+    for (var i = 0; i < fanEls.length; i++) {
+      var rect = fanEls[i].getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        var skills = [];
+        for (var j = 0; j < clickModeCard.skills.length; j++) {
+          if (!clickModeCard.skills[j].isPassive) skills.push(clickModeCard.skills[j]);
+        }
+        if (i < skills.length) {
+          clickHighlight(i);
+          if (settings.desc === "concise" && skills[i].desc) {
+            document.getElementById("skill-desc-tooltip").textContent = skills[i].desc;
+            document.getElementById("skill-desc-tooltip").classList.add("show");
+          }
+          found = true;
+        }
+        break;
+      }
+    }
+    if (!found) {
+      clickClearHighlight();
+      if (settings.desc === "concise") document.getElementById("skill-desc-tooltip").classList.remove("show");
+    }
+  });
+  if (isMobileDevice()) {
+    var lpTimer = null;
+    document.getElementById("drag-overlay").addEventListener("touchstart", function(e) {
+      if (!clickModeCard) return;
+      var t = e.touches[0];
+      lpTimer = setTimeout(function() {
+        var fanEls = document.getElementById("skill-fan").children;
+        for (var i = 0; i < fanEls.length; i++) {
+          var rect = fanEls[i].getBoundingClientRect();
+          if (t.clientX >= rect.left && t.clientX <= rect.right && t.clientY >= rect.top && t.clientY <= rect.bottom) {
+            var skills = []; for (var j = 0; j < clickModeCard.skills.length; j++) { if (!clickModeCard.skills[j].isPassive) skills.push(clickModeCard.skills[j]); }
+            if (i < skills.length) {
+              clickHighlight(i);
+              if (settings.desc === "concise" && skills[i].desc) {
+                document.getElementById("skill-desc-tooltip").textContent = skills[i].desc;
+                document.getElementById("skill-desc-tooltip").classList.add("show");
+              }
+            }
+            break;
+          }
+        }
+      }, 500);
+    }, { passive: true });
+    document.getElementById("drag-overlay").addEventListener("touchend", function() {
+      clearTimeout(lpTimer);
+      document.getElementById("skill-desc-tooltip").classList.remove("show");
+      clickClearHighlight();
+    });
+  }
+}
+
 var CHANGELOG = [
+  { date: "2026-06-08", text: "添加释放技能的交互方式以及技能文本描述的切换开关" },
   { date: "2026-06-07", text: "修复移动端下开始游戏按钮无法显示的问题" }
 ];
 
@@ -1392,6 +1595,7 @@ var game = {
   selectedCards: [],
 
   startGame: function(cardDefs) {
+    cancelClickMode();
     this.selectedCards = cardDefs;
     this.isOver = false;
     this.roundCount = 0;
@@ -1425,6 +1629,7 @@ var game = {
   isExecuting: false,
 
   nextRound: function() {
+    cancelClickMode();
     if (this.isOver) return;
     if (this.isExecuting) { toast("技能正在释放中..."); return; }
     var self = this;
@@ -2029,8 +2234,12 @@ function renderHandCards() {
     div.appendChild(nameEl);
 
     (function(c, el) {
-      div.addEventListener("mousedown", function(e) { onCardDragStart(e, c, el); });
-      div.addEventListener("touchstart", function(e) { onCardDragStart(e, c, el); }, { passive: false });
+      if (settings.control === "click") {
+        div.addEventListener("click", function(e) { e.stopPropagation(); onCardClick(c, el); });
+      } else {
+        div.addEventListener("mousedown", function(e) { onCardDragStart(e, c, el); });
+        div.addEventListener("touchstart", function(e) { onCardDragStart(e, c, el); }, { passive: false });
+      }
     })(card, div);
 
     container.appendChild(div);
@@ -2061,6 +2270,49 @@ function showStatsModal() {
 
 // ===== DRAG INTERACTION =====
 var dragState = null;
+
+function onCardClick(card, cardEl) {
+  if (clickModeCard === card) {
+    cancelClickMode();
+    return;
+  }
+  cancelClickMode();
+  clickModeCard = card;
+  clickModeCardEl = cardEl;
+  cardEl.classList.add("click-selected");
+  document.getElementById("click-overlay").classList.add("active");
+  var skills = [];
+  for (var i = 0; i < card.skills.length; i++) {
+    if (!card.skills[i].isPassive) skills.push(card.skills[i]);
+  }
+  renderSkillFan(window.innerWidth / 2, window.innerHeight / 2, skills);
+  var overlay = document.getElementById("drag-overlay");
+  overlay.classList.add("active");
+  overlay.style.pointerEvents = "auto";
+}
+
+function onFanSkillClick(e) {
+  if (!clickModeCard) return;
+  var fanEls = document.getElementById("skill-fan").children;
+  for (var i = 0; i < fanEls.length; i++) {
+    var rect = fanEls[i].getBoundingClientRect();
+    if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+      var skills = [];
+      for (var j = 0; j < clickModeCard.skills.length; j++) {
+        if (!clickModeCard.skills[j].isPassive) skills.push(clickModeCard.skills[j]);
+      }
+      if (i < skills.length) {
+        game.player.useSkill(clickModeCard, skills[i]);
+        cancelClickMode();
+        renderAll();
+        if (game.player && game.player.cardList.length === 0 && !game.isOver) {
+          setTimeout(function() { game.nextRound(); renderAll(); }, 400);
+        }
+      }
+      return;
+    }
+  }
+}
 
 function onCardDragStart(e, card, cardEl) {
   e.preventDefault();
@@ -2163,6 +2415,13 @@ function onDragMove(e) {
     } else {
       rbar.classList.remove("show");
     }
+    var ttp = document.getElementById("skill-desc-tooltip");
+    if (settings.desc === "concise" && nearestIdx >= 0 && dragState.skills[nearestIdx]) {
+      ttp.textContent = dragState.skills[nearestIdx].desc || "";
+      ttp.classList.add("show");
+    } else {
+      ttp.classList.remove("show");
+    }
   }
 }
 
@@ -2201,7 +2460,7 @@ function renderSkillFan(cx, cy, skills) {
   var cx_fixed = window.innerWidth / 2;
   var cy_fixed = window.innerHeight / 2;
   var isMobile = window.innerWidth < 768;
-  var itemW = isMobile ? 160 : 360, itemH = isMobile ? 72 : 130;
+  var itemW = isMobile ? 160 : 360, itemH = isMobile ? (settings.desc === "concise" ? 52 : 72) : (settings.desc === "concise" ? 80 : 130);
   var gap = isMobile ? 12 : 24, rowGap = isMobile ? 8 : 12;
   var nameFont = isMobile ? "15px" : "22px", costFont = isMobile ? "12px" : "16px", descFont = isMobile ? "11px" : "15px";
   var cols = Math.min(skills.length, 2);
@@ -2251,7 +2510,7 @@ function renderSkillFan(cx, cy, skills) {
     if (!s.vegCost && !s.meatCost && !s.waterCost) costStr = "免费";
     item.innerHTML = '<span style="font-size:' + nameFont + ';font-weight:700;color:#e8b86d">' + s.name + '</span>' +
       '<span style="font-size:' + costFont + ';color:#a09888">' + costStr + '</span>' +
-      '<span style="font-size:' + descFont + ';color:#c0b8a8;margin-top:4px">' + (s.desc || '') + '</span>';
+      (settings.desc === "full" ? '<span style="font-size:' + descFont + ';color:#c0b8a8;margin-top:4px">' + (s.desc || '') + '</span>' : '');
     fan.appendChild(item);
   }
 }
@@ -2277,6 +2536,7 @@ function showFloatingNumber(container, side, text, type) {
 
 // ===== APP CONTROLLER =====
 function switchPanel(name) {
+  if (name !== "battle") cancelClickMode();
   var panels = document.querySelectorAll(".panel");
   for (var i = 0; i < panels.length; i++) panels[i].classList.remove("active");
   var panel = document.getElementById("panel-" + name);
@@ -2470,6 +2730,32 @@ function runInteractionTests() {
     var preHand = game.player.cardList.length;
     game.loadGame();
     ok(game.player.cardList.length > 0, "13 load: hand=" + game.player.cardList.length);
+
+    // --- settings tests (14-20) ---
+    switchPanel("system");
+    initSettings();
+    ok(settings.control === "drag" || settings.control === "click", "14 settings control: " + settings.control);
+    ok(settings.desc === "full" || settings.desc === "concise", "14 settings desc: " + settings.desc);
+    var ctrlBtns = document.getElementById("setting-control").querySelectorAll(".toggle-btn");
+    ctrlBtns[1].dispatchEvent(new Event("click", { bubbles: true }));
+    ok(settings.control === "click", "15 toggle click mode: " + settings.control);
+    ok(localStorage.getItem("h5game_control") === "click", "15 localStorage click: " + localStorage.getItem("h5game_control"));
+    var descBtns = document.getElementById("setting-desc").querySelectorAll(".toggle-btn");
+    descBtns[1].dispatchEvent(new Event("click", { bubbles: true }));
+    ok(settings.desc === "concise", "16 toggle concise: " + settings.desc);
+    ctrlBtns[0].dispatchEvent(new Event("click", { bubbles: true }));
+    ok(settings.control === "drag", "17 toggle back drag: " + settings.control);
+
+    // restore to original for clean state
+    if (isMobileDevice()) {
+      settings.control = "click"; settings.desc = "concise";
+    } else {
+      settings.control = "drag"; settings.desc = "full";
+    }
+    localStorage.removeItem("h5game_control");
+    localStorage.removeItem("h5game_desc");
+    applySettingsUI();
+    switchPanel("deck");
 
     try {
       if (deckBak !== null) localStorage.setItem("h5game_deck", deckBak); else localStorage.removeItem("h5game_deck");
@@ -2758,6 +3044,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   initDeckBuilder();
   renderChangelog();
+  initSettings();
 
   switchPanel("deck");
 
