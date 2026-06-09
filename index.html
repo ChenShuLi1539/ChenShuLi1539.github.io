@@ -157,6 +157,11 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
 .deck-subtitle { font-size:15px; color:var(--text-muted); margin-top:4px; }
 .deck-close { background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; }
 .deck-close:hover { color:var(--text); }
+.deck-filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; align-items:center; }
+.filter-label { font-size:16px; color:var(--text-muted); margin-right:4px; flex-shrink:0; font-weight:700; }
+.filter-btn { padding:4px 14px; border-radius:14px; border:1px solid var(--card-border); background:rgba(255,255,255,0.04); color:var(--text-muted); cursor:pointer; font-size:13px; font-family:var(--font-stack); transition:0.2s; }
+.filter-btn.active { background:var(--accent-gold); border-color:var(--accent-gold); color:#1a1a2e; font-weight:700; }
+.filter-btn:hover:not(.active) { border-color:var(--accent-gold); color:var(--accent-gold); }
 .deck-body { display:flex; gap:12px; flex:1; min-height:0; overflow:hidden; }
 .deck-presets { width:140px; min-width:140px; display:flex; flex-direction:column; gap:8px; padding:4px 0; border-right:1px solid var(--card-border); }
 .preset-title { font-size:14px; font-weight:600; color:var(--text-muted); margin-bottom:4px; }
@@ -322,6 +327,9 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
   .deck-skill-detail { font-size: 10px; }
   .deck-title { font-size: 18px; }
   .deck-subtitle { font-size: 12px; }
+  .filter-label { font-size: 13px; font-weight:700; }
+  .filter-btn { font-size: 11px; padding: 3px 10px; }
+  .deck-filter-bar { gap: 4px; }
   .deck-card-archetype-badge { font-size: 10px; padding: 1px 6px; }
   .deck-card-type-text { font-size: 9px; }
   .deck-card-checkbox { width: 18px; height: 18px; }
@@ -377,7 +385,7 @@ html, body { width:100%; height:100%; overflow:hidden; font-family: 'Microsoft Y
       </div>
     </section>
     <section class="panel" id="panel-deck">
-      <div class="deck-header"><div><div class="deck-title">&#x1F0CF; 卡组构筑</div><div class="deck-subtitle">勾选至少 8 张卡牌以开始对战</div></div><button class="deck-close" id="deck-close">&#x2715;</button></div>
+      <div class="deck-header"><div><div class="deck-title">&#x1F0CF; 卡组构筑</div><div class="deck-subtitle">勾选至少 8 张卡牌以开始对战</div><div class="deck-filter-bar" id="deck-filter-bar"><span class="filter-label">过滤</span><button class="filter-btn" data-filter="mengshou" onclick="applyDeckFilter(this)">猛兽</button><button class="filter-btn" data-filter="chunhui" onclick="applyDeckFilter(this)">春晖</button><button class="filter-btn" data-filter="qiqiao" onclick="applyDeckFilter(this)">乞巧</button><button class="filter-btn" data-filter="tongyong" onclick="applyDeckFilter(this)">通用</button></div></div><button class="deck-close" id="deck-close">&#x2715;</button></div>
       <div class="deck-body">
         <div class="deck-presets" id="deck-presets"></div>
         <div class="deck-card-grid" id="deck-card-grid"></div>
@@ -1076,6 +1084,43 @@ defSkill("播种", {v:0}, "下回合额外获得4点素食", function(you,enemy,
   this.logDesc = you.name + '播种了，下回合将额外获得4点素食';
 });
 
+// === Lion/Jay/Squirrel skills ===
+defSkill("狮吼", {m:5}, "本回合内临时提高30点暴击率", function(you,enemy,ctx){
+  you.addBuff(makeBuff("狮吼", true, 1, "临时提高30点暴击率", {critRate:function(r){return r+30;}}));
+  this.logDesc = you.name + '发出狮吼，暴击率临时提高30点';
+});
+defSkill("不遗余力", {m:12}, "造成2000点伤害，降低自身90%造成的伤害一回合", function(you,enemy,ctx){
+  var dmg = you.calcDamage(2000, enemy, 0);
+  enemy.hp -= dmg.dmg;
+  you.addBuff(makeBuff("疲惫", false, 1, "降低90%造成的伤害", {damage:function(d){return Math.floor(d*0.1);}}));
+  this.logDesc = you.name + '不遗余力，对' + enemy.name + '造成了' + dmg.dmg + '点伤害，自身陷入疲惫';
+});
+defSkill("贮藏", {v:0}, "当这张牌加入你的牌堆时，你拥有一个素食指示器，你每消耗1点素食便存储1点到指示器内", function(you,enemy,ctx){
+  this.logDesc = '素食指示器已激活，当前' + you.vegIndicator + '点';
+}, {isPassive:true});
+defSkill("筑巢", {v:0}, "消耗所有的指示器储存值，每有1点使你获得2点农田经验", function(you,enemy,ctx){
+  var val = you.vegIndicator;
+  you.vegetarian_exp += val * 2;
+  you.vegIndicator = 0;
+  this.logDesc = you.name + '消耗' + val + '点指示器，获得' + (val*2) + '点农田经验';
+});
+defSkill("掷物伤人", {v:0}, "消耗所有的指示器储存值，每有2点就造成100点伤害", function(you,enemy,ctx){
+  var val = you.vegIndicator;
+  var hits = Math.floor(val / 2);
+  var totalDmg = 0;
+  for (var i = 0; i < hits; i++) {
+    var dmg = you.calcDamage(100, enemy, 0);
+    enemy.hp -= dmg.dmg;
+    totalDmg += dmg.dmg;
+  }
+  you.vegIndicator = 0;
+  this.logDesc = you.name + '消耗' + val + '点指示器，造成' + hits + '次共' + totalDmg + '点伤害';
+});
+defSkill("安居", {v:5}, "本回合内临时提高50%抵挡率", function(you,enemy,ctx){
+  you.addBuff(makeBuff("安居", true, 1, "临时提高50%抵挡率", {defendRate:function(r){return r+50;}}));
+  this.logDesc = you.name + '安居乐业，抵挡率临时提高50%';
+});
+
 // ===== BUFF FACTORY =====
 function makeBuff(name, isBuff, lastRound, desc, effects, judgeFn) {
   effects = effects || {};
@@ -1089,7 +1134,9 @@ function makeBuff(name, isBuff, lastRound, desc, effects, judgeFn) {
     defendBuffEffect: effects.defend || function(d){return d;},
     drawCardBuffEffect: effects.draw || function(c){return c;},
     judgeBuffEffect: judgeFn || function(r){return r;},
-    cureBuffEffect: effects.cure || function(c){return c;}
+    cureBuffEffect: effects.cure || function(c){return c;},
+    critRateBuffEffect: effects.critRate || function(r){return r;},
+    defendRateBuffEffect: effects.defendRate || function(r){return r;}
   };
 }
 
@@ -1114,7 +1161,7 @@ var ALL_PLAYER_CARDS = [
   {id:"Pig",name:"猪",type:"LAND",slaughterNum:2,archetype:"",skills:["自在","悠然自得","蛮力"]},
   {id:"Cheetah",name:"猎豹",type:"LAND",slaughterNum:1,archetype:"猛兽",skills:["加速","风驰电掣","闪击"]},
   {id:"Cat",name:"猫",type:"LAND",slaughterNum:1,archetype:"",skills:["优雅","洞若观火","疯狂乱抓"]},
-  {id:"Chook",name:"鸡",type:"SKY",slaughterNum:1,archetype:"",skills:["报晓","啄击","换新天"]},
+  {id:"Chook",name:"鸡",type:"SKY",slaughterNum:1,archetype:"春晖",skills:["报晓","啄击","换新天"]},
   {id:"Crab",name:"螃蟹",type:"SEA",slaughterNum:1,archetype:"",skills:["夹紧","螃蟹拳","横行"]},
   {id:"Turtle",name:"乌龟",type:"SEA",slaughterNum:1,archetype:"",skills:["啃咬","缩壳","破壳而出"]},
   {id:"Buffalo",name:"水牛",type:"LAND",slaughterNum:2,archetype:"春晖",skills:["种瓜得瓜","猛撞"]},
@@ -1126,7 +1173,10 @@ var ALL_PLAYER_CARDS = [
   {id:"MouseWarrior",name:"乞巧族-鼠力士",type:"LAND",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","月影摇光"]},
   {id:"FoxProphet",name:"乞巧族-狐先知",type:"LAND",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","新月重现","辉光"]},
   {id:"MoonRabbit",name:"乞巧族-月桂兔",type:"SKY",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","捣药","明月光辉"]},
-  {id:"GoldfishSaint",name:"乞巧族-金鱼圣女",type:"SEA",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","涨潮","波涛之怒"]}
+  {id:"GoldfishSaint",name:"乞巧族-金鱼圣女",type:"SEA",slaughterNum:1,archetype:"乞巧",skills:["月相","祈祷","涨潮","波涛之怒"]},
+  {id:"Lion",name:"狮子",type:"LAND",slaughterNum:1,archetype:"猛兽",skills:["狮吼","不遗余力"]},
+  {id:"Jay",name:"松鸦",type:"SKY",slaughterNum:1,archetype:"春晖",hasVegIndicator:true,skills:["贮藏","筑巢","啄击"]},
+  {id:"Squirrel",name:"松鼠",type:"LAND",slaughterNum:1,archetype:"春晖",hasVegIndicator:true,skills:["贮藏","掷物伤人","安居"]}
 ];
 
 var ALL_BOSS_CARDS = [
@@ -1166,14 +1216,17 @@ function createCard(cardDef) {
   if (hasSlaughter) {
     var ss = SKILL_DEFS["屠宰"](cardDef.slaughterNum || 1, cardDef.liquifyNum || 1);
     ss.sourceCardName = cardDef.name;
+    ss.desc = "废弃此牌，获得" + ss.slaughterNum + "点肉食";
     skills.push(ss);
   } else if (hasLiquify) {
     var ms = SKILL_DEFS["融化"](cardDef.slaughterNum || 1, cardDef.liquifyNum || 1);
     ms.sourceCardName = cardDef.name;
+    ms.desc = "废弃此牌，获得" + ms.liquifyNum + "点水源";
     skills.push(ms);
   } else if (cardDef.harvestNum !== undefined) {
     var hs = SKILL_DEFS["收割"](1, 1);
     hs.sourceCardName = cardDef.name;
+    hs.desc = "废弃此牌，获得1点素食";
     skills.push(hs);
   }
   return {
@@ -1217,6 +1270,8 @@ function Player(name, isBoss, maxHp) {
   this.skillQueue = [];
   this.cardStatsMap = {};
   this.cardTypeList = [];
+  this.vegIndicator = 0;
+  this.vegIndicatorActive = false;
 }
 
 Player.prototype = {
@@ -1258,18 +1313,25 @@ Player.prototype = {
     this.cardList = [];
     this.buffs = [];
     this.debuffs = [];
+    this.vegIndicator = 0;
+    this.vegIndicatorActive = false;
     for (var di = 0; di < selectedDefs.length; di++) {
       for (var i = 0; i < 4; i++) {
         this.cardStack.push(createCard(selectedDefs[di]));
       }
     }
     shuffle(this.cardStack);
-    var hasQiqiao = false;
+    var hasQiqiao = false, hasIndicator = false;
     for (var di2 = 0; di2 < selectedDefs.length; di2++) {
-      if (selectedDefs[di2].archetype === "乞巧") { hasQiqiao = true; break; }
+      if (selectedDefs[di2].archetype === "乞巧") hasQiqiao = true;
+      if (selectedDefs[di2].hasVegIndicator) hasIndicator = true;
     }
     if (hasQiqiao) {
       this.addBuff(makeMoonPhaseBuff());
+    }
+    if (hasIndicator) {
+      this.vegIndicatorActive = true;
+      this.vegIndicator = 0;
     }
   },
 
@@ -1314,6 +1376,7 @@ Player.prototype = {
     this._veg -= vUsed;
     this._meat -= mUsed;
     this._wat -= wUsed;
+    if (this.vegIndicatorActive) this.vegIndicator += vUsed;
     return { vUsed: vUsed, mUsed: mUsed, wUsed: wUsed };
   },
 
@@ -1321,16 +1384,22 @@ Player.prototype = {
     tempCritRate = tempCritRate || 0;
     var d = damage;
     var isCrit = false;
-    if (randInt(100) <= this.criticalRate + tempCritRate) {
+    var effCrit = this.criticalRate + tempCritRate;
+    for (var i = 0; i < this.buffs.length; i++) effCrit = this.buffs[i].critRateBuffEffect(effCrit);
+    for (var i2 = 0; i2 < this.debuffs.length; i2++) effCrit = this.debuffs[i2].critRateBuffEffect(effCrit);
+    if (randInt(100) <= effCrit) {
       d = Math.floor(d * this.criticalDamage / 100);
       isCrit = true;
       game.addLog(this.name + '打出了暴击！！！');
     }
-    for (var i = 0; i < this.buffs.length; i++) d = this.buffs[i].damageBuffEffect(d);
-    for (var i2 = 0; i2 < this.debuffs.length; i2++) d = this.debuffs[i2].damageBuffEffect(d);
-    for (var j = 0; j < enemy.buffs.length; j++) d = enemy.buffs[j].defendBuffEffect(d);
-    for (var j2 = 0; j2 < enemy.debuffs.length; j2++) d = enemy.debuffs[j2].defendBuffEffect(d);
-    if (randInt(100) <= enemy.defendRate) {
+    for (var j = 0; j < this.buffs.length; j++) d = this.buffs[j].damageBuffEffect(d);
+    for (var j2 = 0; j2 < this.debuffs.length; j2++) d = this.debuffs[j2].damageBuffEffect(d);
+    for (var k = 0; k < enemy.buffs.length; k++) d = enemy.buffs[k].defendBuffEffect(d);
+    for (var k2 = 0; k2 < enemy.debuffs.length; k2++) d = enemy.debuffs[k2].defendBuffEffect(d);
+    var effDef = enemy.defendRate;
+    for (var m = 0; m < enemy.buffs.length; m++) effDef = enemy.buffs[m].defendRateBuffEffect(effDef);
+    for (var m2 = 0; m2 < enemy.debuffs.length; m2++) effDef = enemy.debuffs[m2].defendRateBuffEffect(effDef);
+    if (randInt(100) <= effDef) {
       d = Math.floor(d * 0.4);
       game.addLog(enemy.name + '抵挡了本次攻击，减免了60%伤害');
     }
@@ -1857,6 +1926,7 @@ var game = {
       wt: p.water, wlv: p.water_level, wexp: p.water_exp,
       crt: p.criticalRate, crD: p.criticalDamage, def: p.defendRate,
       moon: p.moonPhase,
+      vegInd: p.vegIndicator, vegIndActive: p.vegIndicatorActive,
       bossClass: p instanceof MantisBoss ? "MantisBoss" : "SmallSnowMan",
       types: p.cardTypeList.slice(),
       stack: p.cardStack.map(function(c) { return c.id; }),
@@ -1886,6 +1956,8 @@ var game = {
     p._wat = d.wt; p._waterExp = d.wexp;
     p.water_level = d.wlv;
     p._critR = d.crt; p._critD = d.crD; p._defR = d.def;
+    p.vegIndicator = d.vegInd || 0;
+    p.vegIndicatorActive = d.vegIndActive || false;
 
     var allDefs = isBoss ? (d.bossClass === "MantisBoss" ? MANTIS_BOSS_CARDS : ALL_BOSS_CARDS) : ALL_PLAYER_CARDS;
     var defById = {};
@@ -1940,6 +2012,13 @@ var game = {
 // ===== DECK BUILDER =====
 var MIN_DECK_SIZE = 8;
 
+var PRESETS = {
+  qiqiao: { name: "基本乞巧体系", desc: "猛兽+乞巧组合，利用月相循环机制打出高额伤害", cards: ["老虎","猪","猎豹","乞巧族-猫长老","乞巧族-鼠力士","乞巧族-狐先知","乞巧族-月桂兔","乞巧族-金鱼圣女"] },
+  chunhui: { name: "基本春晖体系", desc: "发展农田积累素食，通过素食存储打出高额伤害", cards: ["猪","鸡","水牛","老鼠","梅花鹿","狮子","松鸦","松鼠"] }
+};
+
+var ARCH_MAP = { "猛兽": "mengshou", "春晖": "chunhui", "乞巧": "qiqiao", "通用": "tongyong" };
+
 function initDeckBuilder() {
   var grid = document.getElementById("deck-card-grid");
 
@@ -1993,6 +2072,8 @@ function initDeckBuilder() {
 
     // Archetype badge
     var archetypeName = def.archetype || "通用";
+    div.dataset.archetype = archetypeName;
+    div.dataset.archCode = ARCH_MAP[archetypeName] || "tongyong";
     var archBadge = document.createElement("span");
     archBadge.className = "deck-card-archetype-badge " + (archetypeName === "猛兽" ? "mengshou" : archetypeName === "春晖" ? "chunhui" : archetypeName === "乞巧" ? "qiqiao" : "tongyong");
     archBadge.textContent = archetypeName;
@@ -2067,11 +2148,6 @@ function initDeckBuilder() {
 
   updateUI();
 
-  // --- preset buttons ---
-  var PRESETS = {
-    qiqiao: { name: "基本乞巧体系", desc: "猛兽+乞巧组合，利用月相循环机制打出高额伤害", cards: ["老虎","猪","猎豹","乞巧族-猫长老","乞巧族-鼠力士","乞巧族-狐先知","乞巧族-月桂兔","乞巧族-金鱼圣女"] }
-  };
-
   var presetContainer = document.getElementById("deck-presets");
   presetContainer.innerHTML = '<div class="preset-title">推荐卡组</div>';
   var keys = Object.keys(PRESETS);
@@ -2101,6 +2177,22 @@ function initDeckBuilder() {
   });
 
   }
+
+function applyDeckFilter(btn) {
+  var wasActive = btn.classList.contains("active");
+  var allBtns = document.getElementById("deck-filter-bar").querySelectorAll(".filter-btn");
+  for (var abi = 0; abi < allBtns.length; abi++) allBtns[abi].classList.remove("active");
+  var gridItems = document.getElementById("deck-card-grid").querySelectorAll(".deck-card-item");
+  if (wasActive) {
+    for (var gi = 0; gi < gridItems.length; gi++) gridItems[gi].style.display = "";
+  } else {
+    btn.classList.add("active");
+    var f = btn.dataset.filter;
+    for (var gk = 0; gk < gridItems.length; gk++) {
+      gridItems[gk].style.display = gridItems[gk].dataset.archCode === f ? "" : "none";
+    }
+  }
+}
 
 // ===== UI RENDERER =====
 function getBuffIcon(buff) {
@@ -2201,9 +2293,10 @@ function renderPlayerStats(container, player, isBoss) {
       '<div class="mini-bar crit-bar"><div class="mini-bar-fill" style="width:' + critPct + '%"></div><span class="mini-bar-text">' + player.criticalRate + '/100</span></div></div>' +
       '<div class="resource-item"><div class="resource-row"><span class="label">暴击伤害</span><span class="value crit">' + player.criticalDamage + '%</span></div>' +
       '<div class="mini-bar critdmg-bar"><div class="mini-bar-fill" style="width:' + critDmgPct + '%"></div><span class="mini-bar-text">' + player.criticalDamage + '/300</span></div></div>' +
-      '<div class="resource-item"><div class="resource-row"><span class="label">防御率</span><span class="value defend">' + player.defendRate + '%</span></div>' +
+      '<div class="resource-item"><div class="resource-row"><span class="label">抵挡率</span><span class="value defend">' + player.defendRate + '%</span></div>' +
       '<div class="mini-bar defend-bar"><div class="mini-bar-fill" style="width:' + defPct + '%"></div><span class="mini-bar-text">' + player.defendRate + '/100</span></div></div>' +
       (hasMoon ? '<div class="resource-item resource-item-full"><div class="resource-row"><span class="label">月相</span><span class="value" style="color:#f0d090">' + player.moonPhaseName() + ' ' + (["🌑","🌓","🌕","🌗"][player.moonPhase] || "🌑") + '</span></div></div>' : '') +
+      (player.vegIndicatorActive ? '<div class="resource-item resource-item-full"><div class="resource-row"><span class="label">🌱 素食存储</span><span class="value" style="color:#8be06d">' + player.vegIndicator + '</span></div></div>' : '') +
     '</div>' +
     '<div class="queue-in-panel">' +
       '<span class="queue-label">&#9654; 技能队列</span>' +
@@ -2586,11 +2679,13 @@ function runTests() {
     if (cond) passed++; else { failed++; errors.push(msg); }
   }
 
-  check(ALL_PLAYER_CARDS.length === 19, "ALL_PLAYER_CARDS length is " + ALL_PLAYER_CARDS.length + ", expected 19");
+  check(ALL_PLAYER_CARDS.length === 22, "ALL_PLAYER_CARDS length is " + ALL_PLAYER_CARDS.length + ", expected 22");
   check(ALL_BOSS_CARDS.length === 7, "ALL_BOSS_CARDS length is " + ALL_BOSS_CARDS.length + ", expected 7");
+  var chkCard = null; for (var ck = 0; ck < ALL_PLAYER_CARDS.length; ck++) { if (ALL_PLAYER_CARDS[ck].id === "Chook") chkCard = ALL_PLAYER_CARDS[ck]; }
+  check(chkCard && chkCard.archetype === "春晖", "鸡 archetype: " + (chkCard ? chkCard.archetype : "not found"));
 
   var skillNames = Object.keys(SKILL_DEFS);
-  check(skillNames.length >= 61, "SKILL_DEFS has " + skillNames.length + " skills, expected 61+");
+  check(skillNames.length >= 66, "SKILL_DEFS has " + skillNames.length + " skills, expected 66+");
   check(typeof SKILL_DEFS["屠宰"] === "function", "SKILL_DEFS has 屠宰");
   check(typeof SKILL_DEFS["融化"] === "function", "SKILL_DEFS has 融化");
   check(typeof SKILL_DEFS["虎啸"] === "function", "SKILL_DEFS has 虎啸");
@@ -2745,6 +2840,35 @@ function runInteractionTests() {
     ok(settings.desc === "concise", "16 toggle concise: " + settings.desc);
     ctrlBtns[0].dispatchEvent(new Event("click", { bubbles: true }));
     ok(settings.control === "drag", "17 toggle back drag: " + settings.control);
+
+    // --- filter tests (18-23) ---
+    switchPanel("deck");
+    ok(typeof PRESETS.chunhui !== "undefined", "18 chunhui preset exists");
+    ok(PRESETS.chunhui.cards.length === 8, "18 chunhui cards: " + PRESETS.chunhui.cards.length);
+
+    // select chunhui preset
+    var chBtn = document.querySelector(".preset-btn[data-preset='chunhui']");
+    if (chBtn) chBtn.dispatchEvent(new Event("click", { bubbles: true }));
+    var selGrid = document.getElementById("deck-card-grid");
+    ok(selGrid.querySelectorAll(".deck-card-item.selected").length === 8, "19 chunhui select: 8 selected");
+
+    // filter buttons exist
+    var fBar = document.getElementById("deck-filter-bar");
+    ok(fBar.querySelectorAll(".filter-btn").length === 4, "20 filter btn count: " + fBar.querySelectorAll(".filter-btn").length);
+
+    // click "猛兽" filter
+    var fBtns = fBar.querySelectorAll(".filter-btn");
+    fBtns[0].click();
+    ok(fBtns[0].classList.contains("active"), "21 click 猛兽: " + fBtns[0].classList.contains("active"));
+
+    // cancel filter
+    fBtns[0].click();
+    ok(selGrid.querySelectorAll(".deck-card-item.selected").length === 8, "22 filter keeps selection");
+
+    // clear filter state
+    fBar.querySelectorAll(".filter-btn").forEach(function(b){ b.classList.remove("active"); });
+    var items = selGrid.querySelectorAll(".deck-card-item");
+    for (var gj = 0; gj < items.length; gj++) items[gj].style.display = "";
 
     // restore to original for clean state
     if (isMobileDevice()) {
@@ -2985,6 +3109,45 @@ function runLogicTests() {
   p3._critR = 0; p3._critD = 150;
   var claw = SKILL_DEFS["磨爪"](); claw.exec(p3, p2, {addLog:function(){}});
   ok(p3.criticalRate === 3 && p3.criticalDamage === 158, "45 磨爪 +3 crit +8 critDmg: r=" + p3.criticalRate + " d=" + p3.criticalDamage);
+
+  // === LION/JAY/SQUIRREL (46-55) ===
+  ok(typeof SKILL_DEFS["狮吼"] === "function", "46a SKILL has 狮吼");
+  ok(typeof SKILL_DEFS["不遗余力"] === "function", "46b SKILL has 不遗余力");
+  ok(typeof SKILL_DEFS["贮藏"] === "function", "46c SKILL has 贮藏");
+  ok(typeof SKILL_DEFS["筑巢"] === "function", "46d SKILL has 筑巢");
+  ok(typeof SKILL_DEFS["掷物伤人"] === "function", "46e SKILL has 掷物伤人");
+  ok(typeof SKILL_DEFS["安居"] === "function", "46f SKILL has 安居");
+
+  var lionBuff = makeBuff("狮吼", true, 1, "", {critRate:function(r){return r+30;}});
+  ok(lionBuff.critRateBuffEffect(0) === 30, "47 狮吼 critRate +30: " + lionBuff.critRateBuffEffect(0));
+
+  var tiredBuff = makeBuff("疲惫", false, 1, "", {damage:function(d){return Math.floor(d*0.1);}});
+  ok(tiredBuff.damageBuffEffect(1000) === 100, "48 疲惫 dmg*0.1: " + tiredBuff.damageBuffEffect(1000));
+
+  var anjuBuff = makeBuff("安居", true, 1, "", {defendRate:function(r){return r+50;}});
+  ok(anjuBuff.defendRateBuffEffect(5) === 55, "49 安居 defendRate +50: " + anjuBuff.defendRateBuffEffect(5));
+
+  p3.vegIndicatorActive = true; p3.vegIndicator = 0;
+  p3.consumeResourcesExact({vegCost:5, meatCost:0, waterCost:0});
+  ok(p3.vegIndicator === 5, "50 indicator accumulate: " + p3.vegIndicator);
+  p3.vegetarian_exp = 0;
+  var zcSkill = SKILL_DEFS["筑巢"](1,1); zcSkill.exec(p3, p2, {addLog:function(){}});
+  ok(p3.vegIndicator === 0, "51 筑巢 consumes all: " + p3.vegIndicator);
+  ok(p3.vegetarian_exp > 0, "51 筑巢 gives exp: " + p3.vegetarian_exp);
+
+  p3.vegIndicator = 6;
+  var zwSkill = SKILL_DEFS["掷物伤人"](1,1); zwSkill.exec(p3, p2, {addLog:function(){}});
+  ok(p3.vegIndicator === 0, "52 掷物伤人 consumes indicator: " + p3.vegIndicator);
+
+  var lionCard = createCard(ALL_PLAYER_CARDS[19]);
+  ok(lionCard.name === "狮子", "53 lion card: " + lionCard.name);
+  ok(lionCard.skills.length === 3, "53 lion skills: " + lionCard.skills.length);
+
+  var jayCard = createCard(ALL_PLAYER_CARDS[20]);
+  ok(jayCard.name === "松鸦", "54 jay card: " + jayCard.name);
+
+  var slaughterDesc = lionCard.skills[lionCard.skills.length-1];
+  ok(slaughterDesc.desc.indexOf("1") !== -1, "55 discard desc contains num: " + slaughterDesc.desc);
 
   // --- restore ---
   try {
